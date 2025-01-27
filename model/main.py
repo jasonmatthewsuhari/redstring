@@ -9,7 +9,7 @@ def main():
     # the 2 datasets provided by SMUBIA x ISD
     # TODO/DEBUG: add on more CSV paths or make data ingestion pipeline via web crawling
     # Step 0: Ingest the provided data
-    input_files = ["data/raw/wikileaks_parsed.csv", "data/raw/news_excerpts_parsed.csv"]
+    input_files = ["../ingestion/data/raw/wikileaks_parsed.csv", "../ingestion/data/raw/news_excerpts_parsed.csv"]
     texts = []
 
     # Step 1: Load the text
@@ -23,9 +23,9 @@ def main():
     # [UNUSED] Step 2: Preprocess the text using SpaCy
     print("Preprocessing text...")
     for text in texts:
-         text_to_connl([text], "data/raw/spacy_generated_conll.txt")
+         text_to_connl([text], "../ingestion/data/raw/spacy_generated_conll.txt")
 
-    conll_to_json("data/raw/spacy_generated_conll.txt", "data/raw/spacy_generated_json.json")
+    conll_to_json("../ingestion/data/raw/spacy_generated_conll.txt", "../ingestion/data/raw/spacy_generated_json.json")
 
     # Step 2: Load NER Model: bert-large-cased-finetuned-conll03-english
     ner_pipeline = load_ner_model()
