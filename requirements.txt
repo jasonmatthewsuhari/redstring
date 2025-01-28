@@ -11,3 +11,6 @@ langchain-huggingface==0.0.3
 sentence-transformers==3.2.1
 neontology
 pydantic_settings
+scrapy
+python-dotenv
+schedule

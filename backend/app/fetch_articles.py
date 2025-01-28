@@ -1,22 +1,27 @@
 import requests
-from config import API_KEY, BASE_URL, DEFAULT_PARAMS
+import logging
+from .config import API_KEY, BASE_URL, DEFAULT_PARAMS
 
+# Configure logging
+logging.basicConfig(
+    filename="job_execution.log",  # Logs will be saved here
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
 
 def fetch_articles(query, page=1):
-    # Prepare request parameters
+    logging.info(f"Starting fetch_articles job with query: {query}")
     params = {
         **DEFAULT_PARAMS,
-        "q": query,  # Search term
-        "page": page,  # Pagination
-        "apiKey": API_KEY,  # API key from .env
+        "q": query,
+        "page": page,
+        "apiKey": API_KEY,
     }
-
-    # Make the API request
     response = requests.get(BASE_URL, params=params)
 
     if response.status_code == 200:
         articles = response.json().get("articles", [])
-        # Extract relevant fields
+        logging.info(f"Successfully fetched {len(articles)} articles.")
         return [
             {
                 "title": article.get("title"),
@@ -27,15 +32,9 @@ def fetch_articles(query, page=1):
             for article in articles
         ]
     else:
-        # Handle errors gracefully
-        print(f"Error {response.status_code}: {response.text}")
+        logging.error(f"Error fetching articles: {response.status_code} {response.text}")
         return []
 
-
 if __name__ == "__main__":
-    # Test the function with a sample query
     query = "world news"
-    articles = fetch_articles(query)
-    print(articles[0].keys())
-    for article in articles:
-        print(f"{article['published_at']} | {article['source']} | {article['title']} | {article['url']}")
+    fetch_articles(query)

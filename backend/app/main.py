@@ -5,6 +5,10 @@ from pydantic_settings import BaseSettings
 import os
 from dotenv import load_dotenv
 import json
+import schedule
+import time
+import threading
+from .fetch_articles import fetch_articles
 
 # Load environment variables
 load_dotenv()
@@ -46,6 +50,17 @@ class EntityRelationship(BaseRelationship):
         """Get metadata as a dictionary."""
         return json.loads(self.metadata) if self.metadata else None
 
+def job():
+    query = "world news" #TODO: CHECK BEST QUERY
+    articles = fetch_articles(query)
+    print(f"Fetched {len(articles)} articles")
+
+def run_scheduler():
+    schedule.every(10).seconds.do(job)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
 # Initialize FastAPI
 app = FastAPI(debug = True)
 gc: GraphConnection = None
@@ -61,6 +76,8 @@ async def startup_event():
     global gc 
     init_neontology(config)
     gc = GraphConnection()
+
+    threading.Thread(target=run_scheduler, daemon=True).start()
 
 
 
@@ -181,3 +198,10 @@ async def get_all_relationships(entity_id: str):
         import logging
         logging.error(f"Error in /all-relationships/: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+
+@app.get("/test_job")
+async def test_job():
+    query = "world news"
+    articles = fetch_articles(query)
+    print(f"Fetched {len(articles)} articles.")
+    return {"articles": articles}
