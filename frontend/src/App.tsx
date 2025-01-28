@@ -2,12 +2,13 @@
 import React from "react";
 import Header from "./components/Header"; // Header component
 import HeroSection from "./components/HeroSection"; // Main content
-import Squares from "./components/squares"; // Import Squares background
+import Squares from "./components/squares"; // Background animatio
 
 // Define the main App component
 const App: React.FC = () => {
-  return (
+  return (  
     <div className="relative min-h-screen w-screen overflow-hidden">
+      
       {/* Animated Background */}
       <div className="absolute top-0 left-0 w-full h-full -z-10">
         <Squares 
@@ -26,9 +27,6 @@ const App: React.FC = () => {
 
         {/* Hero Section: Main landing content */}
         <HeroSection />
-
-        {/* Footer (uncomment if needed) */}
-        {/* <Footer /> */}
       </div>
     </div>
   );
