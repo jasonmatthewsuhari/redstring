@@ -1,6 +1,5 @@
 import React from "react";
 import AnimatedButton from "./animatedbutton";
-import Card from "./card";
 import RollingCardGallery from "./RollingGallery";
   
 
