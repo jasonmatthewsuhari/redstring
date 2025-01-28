@@ -13,10 +13,10 @@ const HeroSection: React.FC = () => {
         Only Connections
       </h2><br></br>
       <p className="text-xs mt-5 md:text-lg text-gray-600 dark:text-gray-300 mb-6">
-      An advanced analytics tool crafted to unveil relationships between entities, visualized 
+      The advanced analytics tool crafted to unveil relationships between entities, visualized 
       </p>
       <p className="text-xs md:text-lg/0.5 text-gray-600 dark:text-gray-300 mb-6">
-      through a dynamic network graph — like a 'detective string board' interface
+      through a dynamic network graph — a <b>'detective string-board'</b> interface
       </p>
       <p className="text-xs md:text-lg text-gray-600 dark:text-gray-300 mb-6">
       where connections unfold, patterns emerge, and insights come to life.
