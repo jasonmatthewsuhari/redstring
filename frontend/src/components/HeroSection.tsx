@@ -1,6 +1,7 @@
 import React from "react";
 import AnimatedButton from "./animatedbutton";
 import Card from "./card";
+import RollingCardGallery from "./RollingGallery";
   
 
 const HeroSection: React.FC = () => {
@@ -25,9 +26,21 @@ const HeroSection: React.FC = () => {
         <AnimatedButton onClick = {() => {}} text = "Try It Now" />
       </div><br></br><br></br>
       <div className = "flex space-x-4">
-      <Card title="Test" content="LoJKNFOIK-RO0VJIWOJI DFNBOAJSRG0JIODBNIWK-O0FRVIBODNIK0W-QVDBIONEMWGK-BE0IONGMWFK-V0REBINOWFEKRV-EOFDOIOERJNWFOEPKFDEU" seeMoreText="dookie"/>
+      {/* <Card title="Test" content="LoJKNFOIK-RO0VJIWOJI DFNBOAJSRG0JIODBNIWK-O0FRVIBODNIK0W-QVDBIONEMWGK-BE0IONGMWFK-V0REBINOWFEKRV-EOFDOIOERJNWFOEPKFDEU" seeMoreText="dookie"/>
       <Card title="Test" content="Lorem ipsum" seeMoreText="dookie"/>
-      <Card title="Test" content="Lorem ipsum" seeMoreText="dookie"/>
+      <Card title="Test" content="Lorem ipsum" seeMoreText="dookie"/> */}
+      <RollingCardGallery
+        cards={[
+          { title: "Card 1", content: "Content 1", seeMoreText: "See More" },
+          { title: "Card 2", content: "Content 2", seeMoreText: "See More" },
+          { title: "Card 3", content: "Content 3", seeMoreText: "See More" },
+          { title: "Card 4", content: "Content 4", seeMoreText: "See More" },
+          { title: "Card 5", content: "Content 5", seeMoreText: "See More" },
+          { title: "Card 6", content: "Content 6", seeMoreText: "See More" },
+        ]}
+        autoplay={true}
+        pauseOnHover={true}
+      />
       </div>
       
 
