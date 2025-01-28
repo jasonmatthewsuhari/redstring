@@ -3,11 +3,6 @@ import csv
 import time
 
 def load_ner_model():
-    """
-    Load the pre-trained NER model and tokenizer.
-    Returns:
-        nlp_pipeline: Hugging Face NER pipeline.
-    """
     print("Loading the pre-trained NER model...")
     model_name = "dbmdz/bert-large-cased-finetuned-conll03-english"
     tokenizer = AutoTokenizer.from_pretrained(model_name)

@@ -14,3 +14,5 @@ pydantic_settings
 scrapy
 python-dotenv
 schedule
+jina[standard]
+jina[groundingapi]
