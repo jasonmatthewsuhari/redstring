@@ -1,30 +1,27 @@
-// import { useState } from 'react';
-// import reactLogo from './assets/react.svg';
-// import viteLogo from '/vite.svg';
-import './App.css';
+// Import necessary modules and components
+import React from 'react';
+import Header from "./components/Header"; // Header component for the app
+import HeroSection from "./components/HeroSection"; // Main content section
+// import Footer from "./components/Footer"; // Footer is commented out for now
 
-function App() {
-  // const [count, setCount] = useState(0);
-
+// Define the main App component
+const App: React.FC = () => {
   return (
-    <div className="w-screen min-h-screen bg-gradient-to-br from-black via-red-900 to-red-800 flex items-center justify-center">
-      <div className="flex flex-row items-center justify-center text-white space-x-12 px-6 w-full">
-        {/* Rotating Circle Section */}
-        <div className="relative flex items-center justify-center w-64 h-64 bg-neutral-300 rounded-full">
-          <div className="absolute w-80 h-80 bg-transparent rounded-full border border-dotted border-gray-500 animate-spin-slow"></div>
-          <p className="absolute text-black font-semibold text-xl tracking-wide">REDSTRING.</p>
-        </div>
+    <div 
+      className="bg-gradient-to-b from-gray-900 to-gray-800 dark:from-gray-900 dark:to-gray-800 
+                 text-gray-800 dark:text-white min-h-screen w-screen"
+    >
+      {/* Header component */}
+      <Header />
 
-        {/* Text Section */}
-        <div className="text-center">
-          <h1 className="text-5xl font-light tracking-wide">RedString</h1>
-          <button className="mt-6 px-6 py-3 bg-white text-blue-600 font-semibold rounded-md shadow-lg hover:bg-blue-600 hover:text-white transition">
-            Learn More
-          </button>
-        </div>
-      </div>
+      {/* Hero Section: Main landing content */}
+      <HeroSection />
+
+      {/* Footer is commented out but can be added back if needed */}
+      {/* <Footer /> */}
     </div>
   );
-}
+};
 
 export default App;
+
