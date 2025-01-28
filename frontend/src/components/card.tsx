@@ -55,12 +55,13 @@ const StyledWrapper = styled.div`
     background-color: rgba(50, 0, 0, 0.9);
     width: 100%;
     box-shadow: rgba(255, 50, 50, 0.3) 0px 30px 30px -10px;
-    transition: all 0.5s ease-in-out;
+    transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
   }
 
+  /* Hover effect: gentle bob upwards */
   .card:hover {
-    background-position: -100px 100px, -100px 100px;
-    transform: rotate3d(0.5, 1, 0, 30deg);
+    transform: translateY(-10px); /* Moves up slightly */
+    box-shadow: rgba(255, 50, 50, 0.5) 0px 40px 40px -15px; /* Enhances shadow for depth */
   }
 
   .content-box {
@@ -79,10 +80,6 @@ const StyledWrapper = styled.div`
     transform: translate3d(0px, 0px, 50px);
   }
 
-  .content-box .card-title:hover {
-    transform: translate3d(0px, 0px, 60px);
-  }
-
   .content-box .card-content {
     margin-top: 10px;
     font-size: 12px;
@@ -90,10 +87,6 @@ const StyledWrapper = styled.div`
     color: rgba(255, 200, 200, 0.9);
     transition: all 0.5s ease-in-out;
     transform: translate3d(0px, 0px, 30px);
-  }
-
-  .content-box .card-content:hover {
-    transform: translate3d(0px, 0px, 60px);
   }
 
   .content-box .see-more {
@@ -108,10 +101,6 @@ const StyledWrapper = styled.div`
     padding: 0.5rem 0.7rem;
     transition: all 0.5s ease-in-out;
     transform: translate3d(0px, 0px, 20px);
-  }
-
-  .content-box .see-more:hover {
-    transform: translate3d(0px, 0px, 60px);
   }
 
   .icon-box {

@@ -7,8 +7,8 @@ import RollingCardGallery from "./RollingGallery";
 const HeroSection: React.FC = () => {
   return (
     <section className="flex flex-col items-center py-16">
-      <h2 className="text-4xl md:text-6xl font-extrabold mb-4 text-left"> {/*mb is bottom margin*/}
-        RedString Knows No Distance,
+      <h2 className="text-4xl md:text-6xl font-extrabold mb-4 text-left">
+        <span className="text-[#C0402B]">RedString</span> Knows No Distance,
       </h2>
       <h2 className="text-4xl md:text-6xl font-extrabold mb-4 text-left">
         Only Connections
@@ -31,17 +31,29 @@ const HeroSection: React.FC = () => {
       <Card title="Test" content="Lorem ipsum" seeMoreText="dookie"/> */}
       <RollingCardGallery
         cards={[
-          { title: "Card 1", content: "Content 1", seeMoreText: "See More" },
-          { title: "Card 2", content: "Content 2", seeMoreText: "See More" },
-          { title: "Card 3", content: "Content 3", seeMoreText: "See More" },
-          { title: "Card 4", content: "Content 4", seeMoreText: "See More" },
-          { title: "Card 5", content: "Content 5", seeMoreText: "See More" },
-          { title: "Card 6", content: "Content 6", seeMoreText: "See More" },
+          { title: "Red Strings", content: "Content 1", seeMoreText: "See More" },
+          { title: "ER-Extraction", content: "Content 2", seeMoreText: "See More" },
+          { title: "Data Ingestion", content: "Content 3", seeMoreText: "See More" },
+          { title: "Feature 4", content: "Content 4", seeMoreText: "See More" },
+          { title: "Feature 5", content: "Content 5", seeMoreText: "See More" },
+          { title: "Feature 6", content: "Content 6", seeMoreText: "See More" },
         ]}
         autoplay={true}
-        pauseOnHover={true}
+        pauseOnHover={false}
       />
       </div>
+      <br></br><br></br>
+      <footer className="bg-black/80 text-gray-500/70 text-xs md:text-sm py-4 mt-12 border-t border-gray-700/50">
+  <div className="container mx-auto flex flex-col md:flex-row justify-between items-center px-4">
+    <p className="mb-2 md:mb-0 text-gray-400/60">
+      &copy; {new Date().getFullYear()} Team Chiomunks for the SMU BIA Datathon. All rights reserved. Made with 💘 and ☕, always.
+    </p>
+  </div>
+</footer>
+
+
+
+
       
 
       
