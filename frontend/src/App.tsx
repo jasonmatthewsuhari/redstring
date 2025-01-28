@@ -8,8 +8,7 @@ import HeroSection from "./components/HeroSection"; // Main content section
 const App: React.FC = () => {
   return (
     <div 
-      className="bg-gradient-to-b from-gray-900 to-gray-800 dark:from-gray-900 dark:to-gray-800 
-                 text-gray-800 dark:text-white min-h-screen w-screen"
+      className="bg-gradient-to-b from-black to-red-900 min-h-screen w-screen"
     >
       {/* Header component */}
       <Header />
