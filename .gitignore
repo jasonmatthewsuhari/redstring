@@ -1,5 +1,6 @@
 venv/
 .env/
+.env
 
 # Unused / deprecated scripts
 model/scripts/deprecated_ner_training.py
