@@ -1,26 +1,37 @@
 // Import necessary modules and components
-import React from 'react';
-import Header from "./components/Header"; // Header component for the app
-import HeroSection from "./components/HeroSection"; // Main content section
-// import Footer from "./components/Footer"; // Footer is commented out for now
+import React from "react";
+import Header from "./components/Header"; // Header component
+import HeroSection from "./components/HeroSection"; // Main content
+import Squares from "./components/squares"; // Import Squares background
 
 // Define the main App component
 const App: React.FC = () => {
   return (
-    <div 
-      className="bg-gradient-to-b from-black to-red-900 min-h-screen w-screen"
-    >
-      {/* Header component */}
-      <Header />
+    <div className="relative min-h-screen w-screen overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute top-0 left-0 w-full h-full -z-10">
+        <Squares 
+          direction="diagonal" 
+          speed={0.3} 
+          borderColor="rgba(255, 80, 80, 0.3)" 
+          squareSize={40} 
+          hoverFillColor="rgba(255, 0, 0, 0.5)" 
+        />
+      </div>
 
-      {/* Hero Section: Main landing content */}
-      <HeroSection />
+      {/* Main Content */}
+      <div className="relative z-10">
+        {/* Header component */}
+        <Header />
 
-      {/* Footer is commented out but can be added back if needed */}
-      {/* <Footer /> */}
+        {/* Hero Section: Main landing content */}
+        <HeroSection />
+
+        {/* Footer (uncomment if needed) */}
+        {/* <Footer /> */}
+      </div>
     </div>
   );
 };
 
 export default App;
-

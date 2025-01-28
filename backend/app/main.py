@@ -9,15 +9,17 @@ import schedule
 import time
 import threading
 from .fetch_articles import fetch_articles
+from .generate_entity_hash import generate_hash
 import sys
 from pathlib import Path
+import numpy as np
 
 # find repo root
 repo_path = Path(__file__).resolve().parents[2]
 sys.path.append(str(repo_path))
 
-from model.scripts.llm.named_entity_recognition import load_ner_model 
-from model.scripts.llm.relation_extraction import load_re_model
+from model.scripts.llm.named_entity_recognition import load_ner_model, process_text 
+from model.scripts.llm.relation_extraction import load_re_model, process_text_relations
 
 # Load environment variables
 load_dotenv()
@@ -37,8 +39,11 @@ class EntityNode(BaseNode):
     metadata: Optional[str] = None  # Store metadata as a JSON string
 
     def set_metadata(self, metadata_dict: dict):
-        """Set metadata as a JSON string."""
-        self.metadata = json.dumps(metadata_dict)
+        """Set metadata as a JSON string, converting non-serializable types."""
+        # Convert non-serializable types (e.g., float32) to serializable types
+        cleaned_metadata = {key: float(value) if isinstance(value, (float, np.float32)) else value
+                            for key, value in metadata_dict.items()}
+        self.metadata = json.dumps(cleaned_metadata)
 
     def get_metadata(self) -> Optional[dict]:
         """Get metadata as a dictionary."""
@@ -52,8 +57,10 @@ class EntityRelationship(BaseRelationship):
     metadata: Optional[str] = None  # Store metadata as a JSON string
 
     def set_metadata(self, metadata_dict: dict):
-        """Set metadata as a JSON string."""
-        self.metadata = json.dumps(metadata_dict)
+        """Set metadata as a JSON string, converting non-serializable types."""
+        cleaned_metadata = {key: float(value) if isinstance(value, (float, np.float32)) else value
+                            for key, value in metadata_dict.items()}
+        self.metadata = json.dumps(cleaned_metadata)
 
     def get_metadata(self) -> Optional[dict]:
         """Get metadata as a dictionary."""
@@ -186,6 +193,7 @@ async def create_relationship(source_id: str, target_id: str, rel_type: str, met
 
     relationship.merge()
     return {
+        "identifier": generate_hash(source + target),
         "source": source_id,
         "target": target_id,
         "type": rel_type,
@@ -230,25 +238,61 @@ async def process_new_text(texts: list[str]):
         raise HTTPException(status_code=400, detail="No texts provided.")
 
     ner_results = process_text(texts, ner_pipeline)
-    re_results = process_text_relations(texts, re_pipeline)
+    re_results = process_text_relations(texts, *re_pipeline)
 
     for ner_result in ner_results:
         for entity in ner_result['entities']:
-            identifier = entity['word']
-            entity_type = entity['entity_group']
+            identifier = generate_hash(entity['word'])
+            entity_type = entity['label']
             metadata = {
-                "confidence": entity['score']
+                "name": entity['word'],
+                "confidence": float(entity['confidence'])
             }
             await create_entity(identifier=identifier, entity_type=entity_type, metadata=metadata)
 
     for re_result in re_results:
-        for relation in re_result:
+        for relation in re_result['relationships']:
             source_id = relation['source']
             target_id = relation['target']
             rel_type = relation['relationship']
             metadata = {
-                "confidence": relation['score']
+                "confidence": float(relation.get('confidence', 0.0))
             }
             await create_relationship(source_id=source_id, target_id=target_id, rel_type=rel_type, metadata=metadata)
 
     return {"entities": ner_results, "relations": re_results}
+
+@app.delete("/entities/{identifier}")
+async def delete_entity(identifier: str):
+    """
+    Delete an entity by its identifier using a Cypher query.
+    """
+    cypher = """
+    MATCH (e:Entity {identifier: $identifier})
+    DETACH DELETE e
+    RETURN COUNT(e) AS deleted_count
+    """
+    result = gc.evaluate_query(cypher, {"identifier": identifier})
+    
+    if result.records_raw[0].get("deleted_count", 0) == 0:
+        raise HTTPException(status_code=404, detail="Entity not found")
+    
+    return {"message": f"Entity with identifier '{identifier}' has been deleted."}
+
+
+@app.delete("/relationships/{identifier}")
+async def delete_relationship(identifier: str):
+    """
+    Delete a relationship by its identifier using a Cypher query.
+    """
+    cypher = """
+    MATCH ()-[r:RELATIONSHIP {identifier: $identifier}]->()
+    DELETE r
+    RETURN COUNT(r) AS deleted_count
+    """
+    result = gc.evaluate_query(cypher, {"identifier": identifier})
+
+    if result.records_raw[0].get("deleted_count", 0) == 0:
+        raise HTTPException(status_code=404, detail="Relationship not found")
+    
+    return {"message": f"Relationship with identifier '{identifier}' has been deleted."}

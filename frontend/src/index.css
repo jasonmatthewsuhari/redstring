@@ -68,3 +68,18 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* Disable horizontal scrolling */
+body {
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+/* Hide scrollbars */
+body::-webkit-scrollbar {
+  display: none; /* Hide scrollbar for Webkit browsers (Chrome, Safari, Edge) */
+}
+
+body {
+  -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
+  scrollbar-width: none; /* Hide scrollbar for Firefox */
+}

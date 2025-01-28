@@ -51,17 +51,7 @@ def extract_triplets(text):
         triplets.append({'source': subject.strip(), 'relationship': relation.strip(), 'target': object_.strip()})
     return triplets
 
-def process_text_relations(texts, tokenizer, model, output_path):
-    """
-    Process a list of texts to extract relationships using the Relation Extraction model.
-    Args:
-        texts (list): List of text excerpts to process.
-        tokenizer: Hugging Face tokenizer for the model.
-        model: Hugging Face relation extraction model.
-        output_path (str): Path to save the extracted relationships as a CSV file.
-    Returns:
-        list: List of extracted relationships.
-    """
+def process_text_relations(texts, tokenizer, model, output_path=None):
     results = []
     gen_kwargs = {
         "max_length": 256,
@@ -69,6 +59,16 @@ def process_text_relations(texts, tokenizer, model, output_path):
         "num_beams": 3,
         "num_return_sequences": 1,
     }
+
+    # If output_path is provided, prepare the CSV writer
+    csv_writer = None
+    if output_path:
+        with open(output_path, mode="a", newline="", encoding="utf-8") as csvfile:
+            csv_writer = csv.writer(csvfile)
+
+            csvfile.seek(0)
+            if csvfile.tell() == 0:
+                csv_writer.writerow(["Source", "Relationship", "Target"])
 
     for idx, text in enumerate(texts):
         # Tokenize the input text
@@ -85,17 +85,23 @@ def process_text_relations(texts, tokenizer, model, output_path):
         decoded_preds = tokenizer.batch_decode(generated_tokens, skip_special_tokens=False)
 
         # Extract triplets
+        structured_results = []
         for sentence in decoded_preds:
             triplets = extract_triplets(sentence)
-            results.extend(triplets)
+            structured_results.extend(triplets)
+
+            # Write to CSV if enabled
+            if csv_writer:
+                for triplet in triplets:
+                    csv_writer.writerow([triplet["source"], triplet["relationship"], triplet["target"]])
+
+        results.append({"text": text, "relationships": structured_results})
 
         print(f"Processed {idx + 1}/{len(texts)} entries...")
 
-    # Save the results to a CSV file
-    output_df = pd.DataFrame(results)
-    output_df.to_csv(output_path, index=False, columns=["source", "relationship", "target"])
-
-    print(f"Relation extraction completed. Results saved to {output_path}")
+    print("Relation extraction completed.")
+    if output_path:
+        print(f"Results saved to {output_path}")
     return results
 
 if __name__ == "__main__":

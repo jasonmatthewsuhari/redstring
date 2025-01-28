@@ -13,78 +13,48 @@ def load_ner_model():
     print("NER model loaded successfully!")
     return nlp_pipeline
 
-
-def process_text(texts, nlp_pipeline, output_path):
-    """
-    Process a list of texts to extract named entities using the NER pipeline.
-    Args:
-        texts (list): List of text excerpts to process.
-        nlp_pipeline: Hugging Face NER pipeline.
-    Returns:
-        results (list): List of NER results for each text.
-    """
-
+def process_text(texts, nlp_pipeline, output_path=None):
     start_time = time.time()
 
-    with open(output_path, mode="a", newline="", encoding="utf-8") as csvfile:
-        csv_writer = csv.writer(csvfile)
+    results = []
 
-        csvfile.seek(0)
-        if csvfile.tell() == 0:
-            # TODO: Decide whether or not we want to include the original text somehow.
-            # The current issue is that including the original text will make the CSV
-            # absolutely gigantic -- maybe we can make an index somehow.
-            csv_writer.writerow(["Entity Name", "Label", "Confidence"])
+    # If output_path is provided, prepare the CSV writer
+    csv_writer = None
+    if output_path:
+        with open(output_path, mode="a", newline="", encoding="utf-8") as csvfile:
+            csv_writer = csv.writer(csvfile)
 
-        results = []
+            csvfile.seek(0)
+            if csvfile.tell() == 0:
+                csv_writer.writerow(["Entity Name", "Label", "Confidence"])
 
-        # Process texts and write results to the CSV file
-        print(type(texts))
+    # Process texts and collect results
+    for i, text in enumerate(texts):
+        print(f"[{i / len(texts) * 100:.2f}%] Processing text: {text[:69]}...")  # Preview first 69 chars
+        ner_results = nlp_pipeline(text)
 
-        for i in range(len(texts)):
-            text = texts[i]
-            print(f"[{i/len(texts)*100:.2f}%] Processing text: {text[:69]}...") 
-            ner_results = nlp_pipeline(text)
-            results.append({"text": text, "entities": ner_results})
-            for entity in ner_results:
-                # TODO: Decide whether or not we want to include the original text somehow.
-                # The current issue is that including the original text will make the CSV
-                # absolutely gigantic -- maybe we can make an index somehow.
+        # Structure results
+        structured_results = []
+        for entity in ner_results:
+            entity_data = {
+                "word": entity["word"],
+                "label": entity["entity_group"],
+                "confidence": entity["score"]
+            }
+            structured_results.append(entity_data)
+
+            # Write to CSV if enabled
+            if csv_writer:
                 csv_writer.writerow([entity["word"], entity["entity_group"], entity["score"]])
+
+        results.append({"text": text, "entities": structured_results})
 
     elapsed_time = time.time() - start_time
     print(f"Processing completed in {elapsed_time:.2f} seconds.")
 
     return results
 
-
-def display_results(results):
-    """
-    Display the extracted named entities in a readable format.
-    Args:
-        results (list): List of NER results for each text.
-    """
-    for result in results:
-        print("\nOriginal Text:")
-        print(result["text"])
-        print("\nExtracted Entities:")
-        for entity in result["entities"]:
-            print(f"  - Entity: {entity['word']}, Label: {entity['entity_group']}, Confidence: {entity['score']:.2f}")
-
-
 if __name__ == "__main__":
-    # Sample list of news excerpts to process
-    sample_texts = [
-        "Michael Jordan was born in Brooklyn, New York, and played basketball for the Chicago Bulls.",
-        "Elon Musk is the CEO of Tesla, which is headquartered in California.",
-        "The G20 summit will be held in Tokyo next year, attended by leaders from around the world."
-    ]
-
-    # Load the pre-trained NER model
-    ner_pipeline = load_ner_model()
-
-    # Process the texts to extract named entities
-    extracted_results = process_text(sample_texts, ner_pipeline)
-
-    # Display the results
-    display_results(extracted_results)
+    nlp_pipeline = load_ner_model()
+    x = process_text(["The Obama administration has declared war against Donald Trump."], nlp_pipeline)
+    print(x)
