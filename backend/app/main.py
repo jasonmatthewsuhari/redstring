@@ -9,6 +9,15 @@ import schedule
 import time
 import threading
 from .fetch_articles import fetch_articles
+import sys
+from pathlib import Path
+
+# find repo root
+repo_path = Path(__file__).resolve().parents[2]
+sys.path.append(str(repo_path))
+
+from model.scripts.llm.named_entity_recognition import load_ner_model 
+from model.scripts.llm.relation_extraction import load_re_model
 
 # Load environment variables
 load_dotenv()
@@ -56,7 +65,7 @@ def job():
     print(f"Fetched {len(articles)} articles")
 
 def run_scheduler():
-    schedule.every(10).seconds.do(job)
+    schedule.every(24).hours.do(job)
     while True:
         schedule.run_pending()
         time.sleep(1)
@@ -65,6 +74,7 @@ def run_scheduler():
 app = FastAPI(debug = True)
 gc: GraphConnection = None
 
+# STARTUP EVENT HERE
 @app.on_event("startup")
 async def startup_event():
     """Initialize Neo4j on app startup."""
@@ -73,11 +83,26 @@ async def startup_event():
         username=settings.neo4j_username,
         password=settings.neo4j_password,
     )
+
+    # initialize connection to neo4j aura db
+    print("Initializing Neo4J Aura database connection...")
     global gc 
     init_neontology(config)
     gc = GraphConnection()
+    print("Neo4J Aura database connection initialized!")
 
+    # initialize threading job for continuous data ingestion via news api
+    print("Initializing data ingestion job...")
     threading.Thread(target=run_scheduler, daemon=True).start()
+    print("Data ingestion job initialized!")
+
+    # load models on startup
+    #TODO: add fc_pipeline once jina is setup
+    print("Initializing machine learning models...")
+    global ner_pipeline, re_pipeline
+    ner_pipeline = load_ner_model()
+    re_pipeline = load_re_model()
+    print("Machine learning models initialized!")
 
 
 
@@ -199,9 +224,31 @@ async def get_all_relationships(entity_id: str):
         logging.error(f"Error in /all-relationships/: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
-@app.get("/test_job")
-async def test_job():
-    query = "world news"
-    articles = fetch_articles(query)
-    print(f"Fetched {len(articles)} articles.")
-    return {"articles": articles}
+@app.post("/process-text/")
+async def process_new_text(texts: list[str]):
+    if not texts:
+        raise HTTPException(status_code=400, detail="No texts provided.")
+
+    ner_results = process_text(texts, ner_pipeline)
+    re_results = process_text_relations(texts, re_pipeline)
+
+    for ner_result in ner_results:
+        for entity in ner_result['entities']:
+            identifier = entity['word']
+            entity_type = entity['entity_group']
+            metadata = {
+                "confidence": entity['score']
+            }
+            await create_entity(identifier=identifier, entity_type=entity_type, metadata=metadata)
+
+    for re_result in re_results:
+        for relation in re_result:
+            source_id = relation['source']
+            target_id = relation['target']
+            rel_type = relation['relationship']
+            metadata = {
+                "confidence": relation['score']
+            }
+            await create_relationship(source_id=source_id, target_id=target_id, rel_type=rel_type, metadata=metadata)
+
+    return {"entities": ner_results, "relations": re_results}

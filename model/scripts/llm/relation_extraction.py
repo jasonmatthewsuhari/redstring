@@ -1,8 +1,27 @@
 import pandas as pd
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
-# Function to extract triplets from the generated text
+def load_re_model():
+    """
+    Load the relation extraction model and tokenizer.
+    Returns:
+        tuple: tokenizer and model objects
+    """
+    print("Loading the pre-trained Relation Extraction model...")
+    model_name = "Babelscape/rebel-large"
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+    print("Relation Extraction model loaded successfully!")
+    return tokenizer, model
+
 def extract_triplets(text):
+    """
+    Extract triplets from the generated text.
+    Args:
+        text (str): Generated text containing triplets.
+    Returns:
+        list: List of triplets with source, relationship, and target.
+    """
     triplets = []
     relation, subject, object_ = '', '', ''
     current = 'x'
@@ -32,56 +51,64 @@ def extract_triplets(text):
         triplets.append({'source': subject.strip(), 'relationship': relation.strip(), 'target': object_.strip()})
     return triplets
 
-# Load the model and tokenizer
-tokenizer = AutoTokenizer.from_pretrained("Babelscape/rebel-large")
-model = AutoModelForSeq2SeqLM.from_pretrained("Babelscape/rebel-large")
+def process_text_relations(texts, tokenizer, model, output_path):
+    """
+    Process a list of texts to extract relationships using the Relation Extraction model.
+    Args:
+        texts (list): List of text excerpts to process.
+        tokenizer: Hugging Face tokenizer for the model.
+        model: Hugging Face relation extraction model.
+        output_path (str): Path to save the extracted relationships as a CSV file.
+    Returns:
+        list: List of extracted relationships.
+    """
+    results = []
+    gen_kwargs = {
+        "max_length": 256,
+        "length_penalty": 0,
+        "num_beams": 3,
+        "num_return_sequences": 1,
+    }
 
-# Generation parameters
-gen_kwargs = {
-    "max_length": 256,
-    "length_penalty": 0,
-    "num_beams": 3,
-    "num_return_sequences": 1,
-}
+    for idx, text in enumerate(texts):
+        # Tokenize the input text
+        model_inputs = tokenizer(text, max_length=256, padding=True, truncation=True, return_tensors="pt")
 
-# Paths to input and output files
-input_file = "./data/raw/news_excerpts_parsed.csv"
-output_file = "./data/output/relationships.csv"
+        # Generate predictions
+        generated_tokens = model.generate(
+            model_inputs["input_ids"].to(model.device),
+            attention_mask=model_inputs["attention_mask"].to(model.device),
+            **gen_kwargs,
+        )
 
-# Load the CSV file
-data = pd.read_csv(input_file)
+        # Decode predictions
+        decoded_preds = tokenizer.batch_decode(generated_tokens, skip_special_tokens=False)
 
-# Ensure the second column contains text data for processing
-if data.columns.size < 2:
-    raise ValueError("The input CSV does not have at least two columns.")
+        # Extract triplets
+        for sentence in decoded_preds:
+            triplets = extract_triplets(sentence)
+            results.extend(triplets)
 
-text_data = data.iloc[:, 1].dropna()  # Use the second column (assuming it contains the text)
+        print(f"Processed {idx + 1}/{len(texts)} entries...")
 
-# Process each text entry and extract relationships
-results = []
-for idx, text in enumerate(text_data):
-    # Tokenize the input text
-    model_inputs = tokenizer(text, max_length=256, padding=True, truncation=True, return_tensors="pt")
+    # Save the results to a CSV file
+    output_df = pd.DataFrame(results)
+    output_df.to_csv(output_path, index=False, columns=["source", "relationship", "target"])
 
-    # Generate predictions
-    generated_tokens = model.generate(
-        model_inputs["input_ids"].to(model.device),
-        attention_mask=model_inputs["attention_mask"].to(model.device),
-        **gen_kwargs,
-    )
+    print(f"Relation extraction completed. Results saved to {output_path}")
+    return results
 
-    # Decode predictions
-    decoded_preds = tokenizer.batch_decode(generated_tokens, skip_special_tokens=False)
+if __name__ == "__main__":
+    # Sample list of news excerpts to process
+    sample_texts = [
+        "Michael Jordan was born in Brooklyn, New York, and played basketball for the Chicago Bulls.",
+        "Elon Musk is the CEO of Tesla, which is headquartered in California.",
+        "The G20 summit will be held in Tokyo next year, attended by leaders from around the world."
+    ]
 
-    # Extract triplets
-    for sentence in decoded_preds:
-        triplets = extract_triplets(sentence)
-        results.extend(triplets)
+    # Load the pre-trained Relation Extraction model
+    tokenizer, model = load_re_model()
 
-    print(f"Processed {idx + 1}/{len(text_data)} entries...")
-
-# Save the results to a CSV file
-output_df = pd.DataFrame(results)
-output_df.to_csv(output_file, index=False, columns=["source", "relationship", "target"])
-
-print(f"Relation extraction completed. Results saved to {output_file}")
+    # Process the texts to extract relationships
+    output_file = "./data/output/relationships.csv"
+    extracted_results = process_text_relations(sample_texts, tokenizer, model, output_file)

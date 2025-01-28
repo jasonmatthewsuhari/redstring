@@ -6,6 +6,12 @@ from scripts.llm.fact_checking import load_fac_model, fact_check
 from scripts.llm.named_entity_recognition import load_ner_model, process_text
 from scripts.llm.relation_extraction import load_re_model, process_text_relations
 
+# The purpose of this script is for it to be run exactly once: when you want to load it into the
+# neo4j database for the first time. You can do the same if there's a huge increase in the provided
+# dataset as well. If you are looking for the script you should be using for processing singular texts,
+# it's under main.py!
+
+
 def main():
     print("Initializing main process...")
 
@@ -46,7 +52,8 @@ def main():
     csv_output_path = os.path.join(output_path, 'entities.csv')
     extracted_results = process_text(texts, ner_pipeline, csv_output_path) # returned and written to csv, both  
 
-    # Step 5: Filter for high-confidence entity recognitions
+    # Step 5: Filter for high-confidence entity recognitions using Mandy's data cleaning
+
 
     # Step 6: Perform RE for all provided text
 
