@@ -5,27 +5,27 @@ import Squares from "../components/squares";
 const teamMembers = [
   {
     name: "Jason Matthew Suhari",
-    photo: "https://via.placeholder.com/150",
-    linkedin: "https://www.linkedin.com/in/alicejohnson",
-    description: "Jason is a front-end developer with a passion for creating beautiful and user-friendly interfaces."
+    photo: "https://drive.google.com/file/d/1EYtI239cW9MPEeOaNbeCqURKQ--S0QC3/view?usp=sharing",
+    linkedin: "https://www.linkedin.com/in/jasonmatthewsuhari/",
+    description: "Year 2 Data Science and Analytics"
   },
   {
     name: "Neo Jing Yi",
     photo: "https://via.placeholder.com/150",
-    linkedin: "https://www.linkedin.com/in/bobsmith",
-    description: "Mandy specializes in back-end development and database management, ensuring seamless application performance."
+    linkedin: "https://www.linkedin.com/in/jing-yi-neo/",
+    description: "Year 2 Data Science and Analytics"
   },
   {
     name: "Mandy Yap",
-    photo: "https://via.placeholder.com/150",
+    photo: "https://www.linkedin.com/in/mandy-yap-3b6225297/",
     linkedin: "https://www.linkedin.com/in/charliebrown",
-    description: "Charlie is a full-stack engineer with experience in cloud computing and distributed systems."
+    description: "Year 2 Data Science and Analytics"
   },
   {
     name: "Ashley Tan",
     photo: "https://via.placeholder.com/150",
     linkedin: "https://www.linkedin.com/in/danawhite",
-    description: "Dana is a UX/UI designer focused on enhancing user experiences with intuitive and accessible designs."
+    description: "Year 2 Data Science and Analytics"
   }
 ];
 
