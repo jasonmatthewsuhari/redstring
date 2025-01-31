@@ -1,7 +1,7 @@
 import React from "react";
 import AnimatedButton from "./animatedbutton";
 import RollingCardGallery from "./RollingGallery";
-  
+import { Link } from "react-router-dom";
 
 const HeroSection: React.FC = () => {
   return (
@@ -21,9 +21,10 @@ const HeroSection: React.FC = () => {
       <p className="text-xs md:text-lg text-gray-600 dark:text-gray-300 mb-6">
       where connections unfold, patterns emerge, and insights come to life.
       </p><br></br>
-      <div className="flex space-x-4">
-        <AnimatedButton onClick = {() => {}} text = "Try It Now" />
-      </div><br></br><br></br>
+      <Link to="/graph" className="flex space-x-4">
+        <AnimatedButton onClick={() => {}} text="Try It Now" />
+      </Link><br></br><br></br>
+
       <div className = "flex space-x-4">
       {/* <Card title="Test" content="LoJKNFOIK-RO0VJIWOJI DFNBOAJSRG0JIODBNIWK-O0FRVIBODNIK0W-QVDBIONEMWGK-BE0IONGMWFK-V0REBINOWFEKRV-EOFDOIOERJNWFOEPKFDEU" seeMoreText="dookie"/>
       <Card title="Test" content="Lorem ipsum" seeMoreText="dookie"/>
@@ -53,6 +54,7 @@ const HeroSection: React.FC = () => {
 
 
 
+      
       
 
       

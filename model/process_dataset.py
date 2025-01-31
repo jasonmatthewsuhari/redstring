@@ -5,6 +5,7 @@ import os
 from scripts.llm.fact_checking import load_fac_model, fact_check
 from scripts.llm.named_entity_recognition import load_ner_model, process_text
 from scripts.llm.relation_extraction import load_re_model, process_text_relations
+from scripts.cleaning_conversion import entity_filtering
 
 # The purpose of this script is for it to be run exactly once: when you want to load it into the
 # neo4j database for the first time. You can do the same if there's a huge increase in the provided
@@ -53,7 +54,7 @@ def main():
     extracted_results = process_text(texts, ner_pipeline, csv_output_path) # returned and written to csv, both  
 
     # Step 5: Filter for high-confidence entity recognitions using Mandy's data cleaning
-
+    
 
     # Step 6: Perform RE for all provided text
 

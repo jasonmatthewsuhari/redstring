@@ -193,7 +193,7 @@ async def create_relationship(source_id: str, target_id: str, rel_type: str, met
 
     relationship.merge()
     return {
-        "identifier": generate_hash(source + target),
+        "identifier": generate_hash(source.identifier + target.identifier),
         "source": source_id,
         "target": target_id,
         "type": rel_type,
@@ -296,3 +296,31 @@ async def delete_relationship(identifier: str):
         raise HTTPException(status_code=404, detail="Relationship not found")
     
     return {"message": f"Relationship with identifier '{identifier}' has been deleted."}
+
+@app.get("/relationships/")
+async def get_all_relationships():
+    """
+    Fetch all relationships from the database.
+    """
+    try:
+        cypher = """
+        MATCH (source:Entity)-[rel:RELATIONSHIP]->(target:Entity)
+        RETURN source.identifier AS source, rel.type AS relationship, target.identifier AS target
+        """
+        results = gc.evaluate_query(cypher, {})
+
+        relationships = [
+            {
+                "source": record["source"],
+                "relationship": record["relationship"],
+                "target": record["target"]
+            }
+            for record in results.records_raw
+        ]
+
+        return relationships
+
+    except Exception as e:
+        import logging
+        logging.error(f"Error in /relationships/: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")

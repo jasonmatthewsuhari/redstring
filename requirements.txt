@@ -14,4 +14,3 @@ pydantic_settings
 scrapy
 python-dotenv
 schedule
-fuzzywuzzy[speedup]
