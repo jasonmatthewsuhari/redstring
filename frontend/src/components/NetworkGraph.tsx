@@ -1,68 +1,97 @@
-"use client";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { GraphCanvas, GraphNode, GraphEdge } from "reagraph";
 
-import React, { useEffect, useState } from "react";
-import { GraphCanvas } from "@reaviz/reagraph";
-
-interface Node {
-  id: string;
-  label: string;
-}
-
-interface Edge {
-  id: string;
-  source: string;
-  target: string;
-}
+const API_BASE_URL = "http://127.0.0.1:8000"; // Your FastAPI server URL
 
 const NetworkGraph: React.FC = () => {
-  const [data, setData] = useState<{ nodes: Node[]; edges: Edge[] }>({
-    nodes: [],
-    edges: [],
-  });
+  const [nodes, setNodes] = useState<GraphNode[]>([]);
+  const [edges, setEdges] = useState<GraphEdge[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  // Fetch nodes and edges from FastAPI
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchGraphData = async () => {
       try {
-        const response = await fetch("/api/network-data"); // Replace with your API
-        const result = await response.json();
-
-        // Transform API data into nodes and edges
-        const nodes = result.nodes.map((node: any) => ({
-          id: node.id,
-          label: node.label,
+        // Fetch entities (nodes)
+        const entitiesResponse = await axios.get(`${API_BASE_URL}/entities/`);
+        const entities = entitiesResponse.data.map((entity: any) => ({
+          id: entity.identifier,
+          label: entity.type, // Display entity type as label
         }));
 
-        const edges = result.links.map((link: any) => ({
-          id: link.id,
-          source: link.source,
-          target: link.target,
+        // Fetch relationships (edges)
+        const relationshipsResponse = await axios.get(`${API_BASE_URL}/relationships/`);
+        const relationships = relationshipsResponse.data.map((rel: any) => ({
+          id: `${rel.source}-${rel.target}`,
+          source: rel.source,
+          target: rel.target,
+          label: rel.relationship, // Relationship type as label
         }));
 
-        setData({ nodes, edges });
+        setNodes(entities);
+        setEdges(relationships);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching network data:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchData();
+    fetchGraphData();
   }, []);
 
+  if (loading) return <div className="text-center text-lg font-semibold">Loading...</div>;
+
   return (
-    <div className="w-full h-[90vh] bg-gray-100 flex justify-center items-center">
-      <GraphCanvas
-        nodes={data.nodes}
-        edges={data.edges}
-        layoutType="forceDirected"
-        theme={{
-          node: {
-            fill: (node) => (node.id === "special" ? "#FF5733" : "#3498db"),
-            radius: 10,
-          },
-          edge: {
-            stroke: "#000",
-          },
-        }}
-      />
+    <div className="w-full h-screen bg-gray-900 flex justify-center items-center">
+      <GraphCanvas 
+  nodes={nodes} 
+  edges={edges} 
+  layoutType="forceDirected2d"
+  theme={{
+    node: { 
+      fill: "blue", 
+      activeFill: "cyan",
+      opacity: 1,
+      selectedOpacity: 1,
+      inactiveOpacity: 0.3, 
+      label: { 
+        color: "white", 
+        activeColor: "yellow", 
+        stroke: "black",
+      }
+    },
+    edge: { 
+      fill: "white", 
+      activeFill: "lightgray",
+      opacity: 0.7,
+      selectedOpacity: 1,
+      inactiveOpacity: 0.3,
+      label: {
+        color: "gray",
+        activeColor: "white",
+        stroke: "black",
+        fontSize: 10
+      }
+    },
+    ring: { // Required property
+      fill: "orange",
+      activeFill: "orange"
+    },
+    arrow: { // Required property
+      fill: "white",
+      activeFill: "white"
+    },
+    lasso: { // Required property
+      border: "white",
+      background: "rgba(255, 255, 255, 0.2)"
+    }
+  }}
+/>
+
+
+
     </div>
   );
 };
