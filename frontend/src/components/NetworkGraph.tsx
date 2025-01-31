@@ -1,97 +1,72 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { GraphCanvas, GraphNode, GraphEdge } from "reagraph";
-
-const API_BASE_URL = "http://127.0.0.1:8000"; // Your FastAPI server URL
+import React, { useRef, useEffect } from "react";
+import ForceGraph3D from "react-force-graph-3d";
+import * as THREE from "three";
+import SpriteText from "three-spritetext";
 
 const NetworkGraph: React.FC = () => {
-  const [nodes, setNodes] = useState<GraphNode[]>([]);
-  const [edges, setEdges] = useState<GraphEdge[]>([]);
-  const [loading, setLoading] = useState(true);
+  const fgRef = useRef<any>(null);
 
-  // Fetch nodes and edges from FastAPI
+  // Define mappings
+  const NODE_SIZES: Record<string, number> = {
+    small: 3,
+    medium: 5,
+    large: 8
+  };
+  const EDGE_COLORS: Record<string, string> = {
+    friendly: "green",
+    hostile: "red"
+  };
+
+  const data = {
+    nodes: [
+      { id: "1", name: "Alice", category: "small" },
+      { id: "2", name: "Bob", category: "medium" },
+      { id: "3", name: "Charlie", category: "large" },
+      { id: "4", name: "David", category: "medium" },
+      { id: "5", name: "Eve", category: "small" }
+    ],
+    links: [
+      { source: "1", target: "2", category: "friendly" },
+      { source: "3", target: "4", category: "friendly" },
+      { source: "4", target: "5", category: "hostile" }
+    ]
+  };
+
   useEffect(() => {
-    const fetchGraphData = async () => {
-      try {
-        // Fetch entities (nodes)
-        const entitiesResponse = await axios.get(`${API_BASE_URL}/entities/`);
-        const entities = entitiesResponse.data.map((entity: any) => ({
-          id: entity.identifier,
-          label: entity.type, // Display entity type as label
-        }));
-
-        // Fetch relationships (edges)
-        const relationshipsResponse = await axios.get(`${API_BASE_URL}/relationships/`);
-        const relationships = relationshipsResponse.data.map((rel: any) => ({
-          id: `${rel.source}-${rel.target}`,
-          source: rel.source,
-          target: rel.target,
-          label: rel.relationship, // Relationship type as label
-        }));
-
-        setNodes(entities);
-        setEdges(relationships);
-      } catch (error) {
-        console.error("Error fetching network data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchGraphData();
+    if (fgRef.current) {
+      fgRef.current.d3Force("charge").strength(-200); // Spread out nodes
+    }
   }, []);
 
-  if (loading) return <div className="text-center text-lg font-semibold">Loading...</div>;
-
   return (
-    <div className="w-full h-screen bg-gray-900 flex justify-center items-center">
-      <GraphCanvas 
-  nodes={nodes} 
-  edges={edges} 
-  layoutType="forceDirected2d"
-  theme={{
-    node: { 
-      fill: "blue", 
-      activeFill: "cyan",
-      opacity: 1,
-      selectedOpacity: 1,
-      inactiveOpacity: 0.3, 
-      label: { 
-        color: "white", 
-        activeColor: "yellow", 
-        stroke: "black",
-      }
-    },
-    edge: { 
-      fill: "white", 
-      activeFill: "lightgray",
-      opacity: 0.7,
-      selectedOpacity: 1,
-      inactiveOpacity: 0.3,
-      label: {
-        color: "gray",
-        activeColor: "white",
-        stroke: "black",
-        fontSize: 10
-      }
-    },
-    ring: { // Required property
-      fill: "orange",
-      activeFill: "orange"
-    },
-    arrow: { // Required property
-      fill: "white",
-      activeFill: "white"
-    },
-    lasso: { // Required property
-      border: "white",
-      background: "rgba(255, 255, 255, 0.2)"
-    }
-  }}
-/>
+    <div className="w-full h-screen bg-gray-900 flex items-center justify-center">
+      <ForceGraph3D
+        ref={fgRef}
+        graphData={data}
+        enableNodeDrag={true}
+        cooldownTicks={0} // No auto-movement
+        onEngineStop={() => fgRef.current?.zoomToFit(400)} // Fit view on load
+        nodeRelSize={2} // Smaller node size
+        linkWidth={2} // Solid links
+        linkColor={(link) => EDGE_COLORS[link.category] || "red"} // Color based on category
+        linkMaterial={(link) => {
+          const material = new THREE.LineDashedMaterial({
+            color: EDGE_COLORS[link.category] || "red",
+            dashSize: 3,
+            gapSize: 2
+          });
+          return material;
+        }}
+        nodeThreeObjectExtend={true}
+        nodeThreeObject={(node) => {
+          const size = NODE_SIZES[node.category] || 3;
+          const color = "white";
 
-
-
+          const geometry = new THREE.SphereGeometry(size, 16, 16);
+          const material = new THREE.MeshBasicMaterial({ color: color });
+          return new THREE.Mesh(geometry, material);
+        }}
+      />
     </div>
   );
 };
