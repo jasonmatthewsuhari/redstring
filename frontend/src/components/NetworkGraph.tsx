@@ -16,7 +16,7 @@ const NetworkGraph: React.FC = () => {
   useEffect(() => {
     if (fgRef.current) {
       const graph = fgRef.current;
-      graph.d3Force("charge").strength(-10);
+      graph.d3Force("charge").strength(-12);
       graph.d3Force("link").distance(40);
 
       // Add Background Stars
