@@ -1,7 +1,6 @@
 import React from "react";
 import Header from "../components/Header"; // Header component
-import LetterGlitch from '../components/LetterGlitch';
-import Squares from "../components/Squares";
+import Squares from "../components/squares";
 
 const About: React.FC = () => {
   return (  

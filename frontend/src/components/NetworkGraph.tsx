@@ -12,11 +12,11 @@ const NetworkGraph: React.FC = () => {
     large: 8
   };
 
-  const NODE_COLORS: Record<string, string> = {
-    small: "blue",
-    medium: "green",
-    large: "purple"
-  };
+//   const NODE_COLORS: Record<string, string> = {
+//     small: "blue",
+//     medium: "green",
+//     large: "purple"
+//   };
 
   const EDGE_COLORS: Record<string, string> = {
     small: "gray",
