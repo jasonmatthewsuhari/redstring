@@ -1,5 +1,6 @@
 from typing import ClassVar, Optional, List
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from neontology import BaseNode, BaseRelationship, init_neontology, Neo4jConfig, GraphConnection
 from pydantic_settings import BaseSettings
 import os
@@ -76,6 +77,15 @@ def run_scheduler():
 
 # Initialize FastAPI
 app = FastAPI(debug=True)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # CHANGE TO VERCEL LINK LATER
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
+)
+
 gc: GraphConnection = None
 
 # STARTUP EVENT HERE

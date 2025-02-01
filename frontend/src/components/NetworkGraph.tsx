@@ -1,78 +1,99 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import ForceGraph3D from "react-force-graph-3d";
 import * as THREE from "three";
+import { generateEntityHash } from "../utils/generateEntityHash"; // ✅ Import TypeScript hash function
 
-const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
-const GOOGLE_CSE_ID = import.meta.env.VITE_GOOGLE_CSE_ID;
-
-const SEARCH_ENGINE_URL = `https://www.googleapis.com/customsearch/v1`;
-const placeholderImage = "https://via.placeholder.com/150"; // Default fallback image
+const API_BASE_URL = "http://127.0.0.1:8000"; // Change if using deployed API
+const ENTITIES_ENDPOINT = `${API_BASE_URL}/entities/`;
 
 const NetworkGraph: React.FC = () => {
   const fgRef = useRef<any>(null);
+  const [nodes, setNodes] = useState<any[]>([]);
+  const [links, setLinks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<any>(null);
-  const [imageCache, setImageCache] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (fgRef.current) {
-      const graph = fgRef.current;
-      graph.d3Force("charge").strength(-12);
-      graph.d3Force("link").distance(40);
+    const fetchEntities = async () => {
+      try {
+        console.log("📥 Fetching Entities from API...");
+        const response = await fetch(ENTITIES_ENDPOINT);
+        if (!response.ok) throw new Error("Failed to fetch entities");
 
-      // Add Background Stars
-      const scene = graph.scene();
-      const starGeometry = new THREE.BufferGeometry();
-      const starMaterial = new THREE.PointsMaterial({
-        color: 0xffffff,
-        size: 1,
-        sizeAttenuation: true,
-        transparent: true,
-        opacity: 0.8,
-      });
+        const data = await response.json();
+        console.log("📌 RAW API Response:", data);
 
-      const starVertices = [];
-      for (let i = 0; i < 500; i++) {
-        const x = (Math.random() - 0.5) * 2000;
-        const y = (Math.random() - 0.5) * 2000;
-        const z = (Math.random() - 0.5) * 2000;
-        starVertices.push(x, y, z);
+        const nodesArray: any[] = [];
+        const linksArray: any[] = [];
+        const nameToId: Record<string, string> = {};
+
+        // ✅ Step 1: Populate nodes first
+        data.forEach((entity: any) => {
+          const { identifier, metadata } = entity;
+          if (!metadata?.name) return;
+
+          nodesArray.push({ identifier, name: metadata.name });
+          nameToId[metadata.name.toLowerCase()] = identifier;
+        });
+
+        console.log("✅ Processed Nodes:", nodesArray);
+        console.log("📌 Name-to-ID Mapping:", nameToId);
+
+        // ✅ Step 2: Ensure nodes are fully set before processing links
+        setNodes(nodesArray); // 🔥 Set nodes first
+
+        setTimeout(() => {
+          console.log("🔗 Processing Relationships after Nodes are Set...");
+
+          data.forEach((entity: any) => {
+            const { metadata } = entity;
+            if (!metadata?.affiliations) return;
+
+            metadata.affiliations.forEach((aff: any) => {
+              const targetName = aff.entity.toLowerCase();
+              console.log(`🔍 Checking relation: ${metadata.name} → ${aff.entity}`);
+
+              if (!(targetName in nameToId)) {
+                console.warn(`⚠️ Missing entity found: ${aff.entity}`);
+                const generatedId = generateEntityHash(aff.entity);
+                nodesArray.push({ identifier: generatedId, name: aff.entity });
+                nameToId[targetName] = generatedId;
+              } else {
+                console.log(
+                  `✅ Found existing entity for relation: ${metadata.name} → ${aff.entity} (ID: ${nameToId[targetName]})`
+                );
+              }
+
+              linksArray.push({
+                source: nameToId[metadata.name.toLowerCase()],
+                target: nameToId[targetName],
+                category: aff.category,
+                score: aff.score,
+              });
+            });
+          });
+
+          console.log("🔗 Final Relationships:", linksArray);
+
+          // ✅ Ensure nodes exist before setting links
+          setLinks(linksArray);
+          setLoading(false);
+        }, 500); // 🔥 Small delay to ensure nodes are in state
+
+      } catch (err) {
+        setError((err as Error).message);
+        setLoading(false);
       }
+    };
 
-      starGeometry.setAttribute("position", new THREE.Float32BufferAttribute(starVertices, 3));
-      const starField = new THREE.Points(starGeometry, starMaterial);
-      scene.add(starField);
-    }
+    fetchEntities();
   }, []);
 
-  // Fetch image from Google Custom Search API
-  const fetchImage = async (query: string) => {
-    if (imageCache[query]) return imageCache[query];
-
-    try {
-      const response = await fetch(
-        `${SEARCH_ENGINE_URL}?q=${encodeURIComponent(query)}&cx=${GOOGLE_CSE_ID}&key=${GOOGLE_API_KEY}&searchType=image&num=1`
-      );
-      const data = await response.json();
-
-      if (data.items && data.items.length > 0) {
-        const imageUrl = data.items[0].link;
-        setImageCache((prev) => ({ ...prev, [query]: imageUrl }));
-        return imageUrl;
-      }
-    } catch (error) {
-      console.error("Error fetching image:", error);
-    }
-    return placeholderImage;
-  };
-
   // Handle node click
-  const handleNodeClick = async (node: any, event: MouseEvent) => {
+  const handleNodeClick = (node: any, event: MouseEvent) => {
     event.stopPropagation();
-
-    setSelectedNode({
-      ...node,
-      image: await fetchImage(`${node.name} ${node.category}`),
-    });
+    setSelectedNode(node);
 
     fgRef.current.cameraPosition(
       { x: node.x, y: node.y, z: node.z + 100 },
@@ -87,101 +108,53 @@ const NetworkGraph: React.FC = () => {
     setSelectedNode(null);
   };
 
+  if (loading) return <div className="text-white text-center">Loading graph...</div>;
+  if (error) return <div className="text-red-500 text-center">Error: {error}</div>;
+
+  console.log("🚀 Rendering ForceGraph3D");
+  console.log("📌 FINAL Nodes:", nodes);
+  console.log("🔗 FINAL Links:", links);
+
   return (
     <div className="w-full h-screen bg-gray-900 flex items-center justify-center relative">
       <div className="absolute inset-0" onClick={handleBackgroundClick}></div>
 
-      <ForceGraph3D
-        ref={fgRef}
-        graphData={{
-          nodes: [
-            { id: "1", name: "Alice", category: "small", age: 25, occupation: "Engineer" },
-            { id: "2", name: "Bob", category: "medium", age: 30, occupation: "Designer" },
-            { id: "3", name: "Charlie", category: "large", age: 35, occupation: "Doctor" },
-            { id: "4", name: "David", category: "medium", age: 28, occupation: "Teacher" },
-            { id: "5", name: "Eve", category: "small", age: 22, occupation: "Student" }
-          ],
-          links: [
-            { source: "1", target: "2", category: "friendly" },
-            { source: "3", target: "4", category: "hostile" },
-            { source: "4", target: "5", category: "friendly" }
-          ]
-        }}
-        enableNodeDrag={true}
-        cooldownTicks={Infinity}
-        nodeRelSize={2}
-        linkWidth={0.5}
-        linkColor={(link: { category?: string }) =>
-          ({ friendly: "rgba(0, 255, 0, 0.8)", hostile: "rgba(255, 0, 0, 0.8)" }[link.category || "small"]) || "red"
-        }
-        linkMaterial={(link: { category?: string }) => {
-          const color = ({ friendly: "rgba(0, 255, 0, 0.8)", hostile: "rgba(255, 0, 0, 0.8)" }[link.category || "small"]) || "red";
-
-          return new THREE.LineBasicMaterial({
-            color,
-            transparent: true,
-            opacity: 0.8,
-            depthWrite: false
-          });
-        }}
-        nodeThreeObjectExtend={true}
-        nodeThreeObject={(node: { id: string; category?: string }) => {
-          const baseGeometry = new THREE.SphereGeometry({ small: 3, medium: 5, large: 8 }[node.category || "small"], 16, 16);
-
-          // Inner white node
-          const baseMaterial = new THREE.MeshStandardMaterial({
-            color: "white",
-            emissive: "white",
-            emissiveIntensity: 0.4
-          });
-
-          const sphere = new THREE.Mesh(baseGeometry, baseMaterial);
-
-          if (selectedNode?.id === node.id) {
-            // Outer blue glow outline
-            const outlineGeometry = new THREE.SphereGeometry(
-              { small: 3.5, medium: 5.5, large: 8.5 }[node.category || "small"], 
-              16, 
-              16
-            );
-            const outlineMaterial = new THREE.MeshBasicMaterial({
-              color: "lightblue",
-              transparent: true,
-              opacity: 0.6,
-              side: THREE.BackSide,
-            });
-
-            const outline = new THREE.Mesh(outlineGeometry, outlineMaterial);
-            sphere.add(outline); // Add outline to the node
+      {nodes.length > 0 && links.length > 0 && ( // ✅ Only render graph if data exists
+        <ForceGraph3D
+          ref={fgRef}
+          graphData={{ nodes, links }}
+          // 🔥 Configure the ID fields to match your node/link properties
+          nodeId="identifier"
+          linkSource="source"
+          linkTarget="target"
+          enableNodeDrag={true}
+          cooldownTicks={Infinity}
+          nodeRelSize={2}
+          linkWidth={0.5}
+          linkColor={(link: { category?: string }) =>
+            ({
+              friendly: "rgba(0, 255, 0, 0.8)",
+              hostile: "rgba(255, 0, 0, 0.8)",
+              business: "rgba(0, 0, 255, 0.8)",
+            }[link.category || "business"]) || "gray"
           }
+          linkMaterial={(link: { category?: string }) => {
+            const color =
+              ({
+                friendly: "rgba(0, 255, 0, 0.8)",
+                hostile: "rgba(255, 0, 0, 0.8)",
+                business: "rgba(0, 0, 255, 0.8)",
+              }[link.category || "business"]) || "gray";
 
-          return sphere;
-        }}
-        onNodeClick={handleNodeClick}
-      />
-
-      {/* Dropdown Menu - Fixed at Top Right with Margin */}
-      {selectedNode && (
-        <div
-          className="absolute top-20 right-10 bg-white shadow-md rounded-md p-4 text-gray-900 w-64"
-          onClick={(e) => e.stopPropagation()} // Prevent closing dropdown when clicking inside
-        >
-          {/* Dynamic Image */}
-          <div className="w-full h-24 bg-gray-200 flex items-center justify-center rounded-md overflow-hidden">
-            <img src={selectedNode.image} alt={selectedNode.name} className="w-full h-full object-cover" />
-          </div>
-
-          {/* Node Details */}
-          <h3 className="font-bold text-lg mt-3">{selectedNode.name}</h3>
-          <ul className="text-sm text-gray-600 mt-2">
-            <li>
-              <span className="font-semibold">Identifier:</span> {selectedNode.id}
-            </li>
-            <li>
-              <span className="font-semibold">Category:</span> {selectedNode.category}
-            </li>
-          </ul>
-        </div>
+            return new THREE.LineBasicMaterial({
+              color,
+              transparent: true,
+              opacity: 0.8,
+              depthWrite: false,
+            });
+          }}
+          onNodeClick={handleNodeClick}
+        />
       )}
     </div>
   );
