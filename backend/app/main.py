@@ -80,7 +80,7 @@ app = FastAPI(debug=True)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # CHANGE TO VERCEL LINK LATER
+    allow_origins=["https://redstring-37u4ow5uq-jason-matthew-suharis-projects.vercel.app/"],  # CHANGE TO VERCEL LINK LATER
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods
     allow_headers=["*"],  # Allow all headers
