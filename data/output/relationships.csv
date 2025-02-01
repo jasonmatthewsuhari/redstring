@@ -1283,6 +1283,7 @@ Pimientos de Padrón,has part,green peppers
 gianduiotto,country of origin,Italy
 Piedmont,country,Italy
 Italy,contains administrative territorial entity,Piedmont
+<<<<<<< Updated upstream
 Cig kofte,has part,bulgur
 Thousand-Year Story,instance of,tourist train
 Miebianbian bakmie noodle,country of origin,Singapore
@@ -2150,3 +2151,5 @@ Investigation Task Force,inception,2003
 United Nations Security Council Resolution 1244,publication date,10 June 1999
 United Nations Security Council Resolution 1244,publication date,10 June 1999
 Jean-David Levitte,position held,French Ambassador
+=======
+>>>>>>> Stashed changes

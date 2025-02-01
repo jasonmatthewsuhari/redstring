@@ -72,6 +72,7 @@ def main():
 
     # Step 6: Perform RE for all provided text
     relation_csv_output_path = os.path.join(output_path, 'relationships.csv')
+<<<<<<< Updated upstream
     # extracted_results = process_text_relations(texts, re_tokenizer, re_model, relation_csv_output_path)
 
     # Step 7: Re-Cleaning Entities
@@ -79,6 +80,25 @@ def main():
     df_relationships.to_csv(relation_csv_output_path, index = False)
 
     
+=======
+    extracted_results = process_text_relations(texts, re_tokenizer, re_model, relation_csv_output_path)
+
+    # # Step 7: Re-Cleaning Entities
+    df_relationships = pd.read_csv(relation_csv_output_path)
+    df_relationships.to_csv(relation_csv_output_path, index = False)
+
+    # # process only unique entities from source and target
+    # valid_entities = set(df_relationships["Source"]).union(set(df_relationships["Target"]))
+    # df_final = df_final[df_final["Entity Name"].isin(valid_entities)]
+    # df_final.to_csv(entity_csv_output_path, index=False)
+
+    # df_relationships = pd.read_csv(relation_csv_output_path)
+    # valid_entities = set(df_final["Entity Name"])
+    # df_relationships = df_relationships[
+    #     df_relationships["Source"].isin(valid_entities) & df_relationships["Target"].isin(valid_entities)
+    # ]
+    # df_relationships.to_csv(relation_csv_output_path, index=False)
+>>>>>>> Stashed changes
 
     # print("Machine learning pipeline for initial dataset completed successfully!")
 

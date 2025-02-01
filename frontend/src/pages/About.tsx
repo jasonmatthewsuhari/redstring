@@ -25,6 +25,7 @@ const App: React.FC = () => {
         <Header />
         <AboutSection />
       </div>
+<<<<<<< Updated upstream
 
       {/* About Section */}
       <div className="max-w-3xl text-center mt-10 p-6 bg-white bg-opacity-80 shadow-lg rounded-lg relative z-10">
@@ -47,6 +48,8 @@ const App: React.FC = () => {
           }
         `}
       </style>
+=======
+>>>>>>> Stashed changes
     </div>
   );
 };
