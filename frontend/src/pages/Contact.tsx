@@ -15,12 +15,12 @@ const teamMembers = [
   },
   {
     name: "Mandy Yap",
-    linkedin: "https://www.linkedin.com/in/charliebrown",
+    linkedin: "https://www.linkedin.comhttps://www.linkedin.com/in/mandy-yap-3b6225297//in/charliebrown",
     description: "Year 2 Data Science and Analytics"
   },
   {
     name: "Ashley Tan",
-    linkedin: "", // No LinkedIn link
+    linkedin: "https://www.linkedin.com/in/ashley-tan-ying-shan?lipi=urn%3Ali%3Apage%3Ad_flagship3_profile_view_base_contact_details%3BXCiYEcXjSrOPqlha3tJf3A%3D%3D", // Added LinkedIn back
     description: "Year 2 Data Science and Analytics"
   }
 ];
@@ -50,16 +50,14 @@ const App: React.FC = () => {
               <div key={index} className="p-4 border rounded-lg shadow-md text-center">
                 <h3 className="text-xl font-semibold">{member.name}</h3>
                 <p className="text-gray-600 mb-2">{member.description}</p>
-                {member.linkedin && (
-                  <a 
-                    href={member.linkedin} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="text-blue-500 hover:underline"
-                  >
-                    LinkedIn Profile
-                  </a>
-                )}
+                <a 
+                  href={member.linkedin} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-blue-500 hover:underline"
+                >
+                  LinkedIn Profile
+                </a>
               </div>
             ))}
           </div>
