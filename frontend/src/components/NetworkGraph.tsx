@@ -163,7 +163,7 @@ const NetworkGraph: React.FC = () => {
       {/* Dropdown Menu - Fixed at Top Right with Margin */}
       {selectedNode && (
         <div
-          className="absolute top-4 right-6 bg-white shadow-md rounded-md p-4 text-gray-900 w-64"
+          className="absolute top-20 right-10 bg-white shadow-md rounded-md p-4 text-gray-900 w-64"
           onClick={(e) => e.stopPropagation()} // Prevent closing dropdown when clicking inside
         >
           {/* Dynamic Image */}

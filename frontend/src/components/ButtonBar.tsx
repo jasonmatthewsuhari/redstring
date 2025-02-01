@@ -1,12 +1,24 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { Square, Settings, Filter, Clock, ZoomIn } from "lucide-react";
-import TextInput from "./TextInput";
+import { Pointer, Settings, Filter, Clock, ZoomIn } from "lucide-react";
+import SearchBox from "./SearchBox"
+import SendBox from "./SendBox"
 import Slider from "@mui/material/Slider";
 
 const ButtonBar: React.FC = () => {
   const [showTools, setShowTools] = useState(false);
+  const [showFilterOptions, setShowFilterOptions] = useState(false);
   const [activeButton, setActiveButton] = useState<string | null>(null);
+
+  const toggleTools = () => {
+    setShowTools(!showTools);
+    setShowFilterOptions(false); // Close filter options if Tools is opened
+  };
+
+  const toggleFilter = () => {
+    setShowFilterOptions(!showFilterOptions);
+    setShowTools(false); // Close Tools if Filter is opened
+  };
 
   return (
     <StyledWrapper>
@@ -17,16 +29,16 @@ const ButtonBar: React.FC = () => {
             className={`button ${activeButton === "select" ? "active" : ""}`}
             onClick={() => setActiveButton(activeButton === "select" ? null : "select")}
           >
-            <Square size={32} color="white" />
+            <Pointer size={32} color="white" />
           </button>
           <span className="tooltip">Select</span>
         </div>
 
-        {/* Tools Button with Clickable Drop-up */}
+        {/* Tools Button with Drop-up */}
         <div className="tooltip-container tools-container">
           <button
             className={`button ${showTools ? "active" : ""}`}
-            onClick={() => setShowTools(!showTools)}
+            onClick={toggleTools}
           >
             <Settings size={32} color="white" />
           </button>
@@ -39,15 +51,22 @@ const ButtonBar: React.FC = () => {
           )}
         </div>
 
-        {/* Filter Button */}
-        <div className="tooltip-container">
+        {/* Filter Button with Drop-up */}
+        <div className="tooltip-container filter-container">
           <button
-            className={`button ${activeButton === "filter" ? "active" : ""}`}
-            onClick={() => setActiveButton(activeButton === "filter" ? null : "filter")}
+            className={`button ${showFilterOptions ? "active" : ""}`}
+            onClick={toggleFilter}
           >
             <Filter size={32} color="white" />
           </button>
           <span className="tooltip">Filter</span>
+          {showFilterOptions && (
+            <div className="dropup-menu">
+              <button className="dropup-button">By Date</button>
+              <button className="dropup-button">By Category</button>
+              <button className="dropup-button">By Relevance</button>
+            </div>
+          )}
         </div>
 
         {/* Timeline Button */}
@@ -61,25 +80,16 @@ const ButtonBar: React.FC = () => {
           <span className="tooltip">Timeline</span>
         </div>
 
-        {/* Input Text */}
+        {/* Search */}
         <div className="tooltip-container">
-          <TextInput />
-          <span className="tooltip">Input Text</span>
+          <SearchBox />
+          <span className="tooltip">Search Node</span>
         </div>
 
-        {/* Zoom Slider */}
-        <div className="tooltip-container slider-container">
-          <ZoomIn size={32} color="white" />
-          <Slider
-            className="zoom-slider"
-            defaultValue={100}
-            step={10}
-            marks
-            min={50}
-            max={150}
-            aria-label="Zoom"
-          />
-          <span className="tooltip">Zoom</span>
+        {/* Input Text */}
+        <div className="tooltip-container">
+          <SendBox />
+          <span className="tooltip">Input Text</span>
         </div>
       </div>
     </StyledWrapper>
@@ -91,8 +101,8 @@ const StyledWrapper = styled.div`
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  width: 90%;
-  max-width: 800px;
+  width: 95%; /* Increased width */
+  max-width: 1000px; /* Increased max-width */
   border-radius: 20px;
   display: flex;
   justify-content: center;
@@ -115,8 +125,8 @@ const StyledWrapper = styled.div`
   .button {
     outline: none;
     border: none;
-    width: 70px;
-    height: 70px;
+    width: 75px; /* Slightly increased */
+    height: 75px; /* Slightly increased */
     border-radius: 50%;
     background-color: transparent;
     display: flex;
@@ -171,7 +181,7 @@ const StyledWrapper = styled.div`
     display: flex;
     flex-direction: column;
     gap: 5px;
-    z-index: 9999; /* Ensures it appears above everything */
+    z-index: 9999;
   }
 
   .dropup-button {
@@ -195,7 +205,7 @@ const StyledWrapper = styled.div`
   }
 
   .zoom-slider {
-    width: 120px;
+    width: 140px; /* Slightly increased */
   }
 `;
 

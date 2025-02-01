@@ -1,44 +1,39 @@
+import requests
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 from dotenv import load_dotenv
-from pathlib import Path
-from jina import Flow, Client, Document
 import os
 import csv
 import time
+
+# Jina API Configuration
+JINA_API_URL = "https://g.jina.ai/"
+JINA_API_KEY = "your_jina_api_key_here"  # Replace with your actual API key
 
 def load_fc_model():
     print("Loading the pre-trained fact-checking model...")
     tokenizer = AutoTokenizer.from_pretrained("VinMir/GordonAI-fact_checking")
     model = AutoModelForSequenceClassification.from_pretrained("VinMir/GordonAI-fact_checking")
-
+    
     nlp_pipeline = pipeline("text-classification", model=model, tokenizer=tokenizer)
     print("Fact-checking model loaded successfully!")
     return nlp_pipeline
 
-def setup_jina_flow():
-    print("Setting up Jina Reader Flow...")
-    grounding_api_key = os.getenv("JINA_API_KEY")
-    if not grounding_api_key:
-        raise ValueError("JINA_API_KEY is not set. Ensure it is defined in your .env file.")
+def retrieve_evidence_with_jina(text):
+    """Retrieve evidence from Jina's hosted API instead of running a local instance."""
+    headers = {
+        "Accept": "application/json",
+        "Authorization": f"Bearer {JINA_API_KEY}",
+    }
+    
+    try:
+        response = requests.get(f"{JINA_API_URL}{text}", headers=headers)
+        response.raise_for_status()
+        data = response.json()
+        return data.get("text", "No evidence found.")
+    except requests.exceptions.RequestException as e:
+        return f"Error retrieving evidence: {e}"
 
-    flow = Flow().add(
-        uses="jinaai/jina-reader:latest",
-        uses_with={"retriever": "wikipedia"},
-        env={"JINA_API_KEY": grounding_api_key},
-    )
-
-    print("Jina Reader Flow setup complete.")
-    return flow
-
-def retrieve_evidence_with_jina(jina_client, text):
-    print(f"Retrieving evidence for: {text[:50]}...")
-    response = jina_client.post("/", [Document(text=text)], return_results=True)
-
-    if response:
-        return response[0].matches[0].text if response[0].matches else "No evidence found."
-    return "No evidence retrieved."
-
-def fact_check(texts, nlp_pipeline, jina_client, output_path):
+def fact_check(texts, nlp_pipeline, output_path):
     start_time = time.time()
 
     with open(output_path, mode="a", newline="", encoding="utf-8") as csvfile:
@@ -59,8 +54,8 @@ def fact_check(texts, nlp_pipeline, jina_client, output_path):
             label = fc_results[0]["label"]
             confidence = fc_results[0]["score"]
 
-            # Retrieve evidence from Jina Reader
-            evidence = retrieve_evidence_with_jina(jina_client, text)
+            # Retrieve evidence from Jina API
+            evidence = retrieve_evidence_with_jina(text)
 
             # Write results to CSV
             csv_writer.writerow([text, label, confidence, evidence])
@@ -82,9 +77,5 @@ if __name__ == "__main__":
     # Load the fact-checking model
     fact_check_pipeline = load_fc_model()
 
-    # Setup Jina Reader Flow
-    jina_flow = setup_jina_flow()
-    jina_client = Client(port=jina_flow.port)
-
     # Perform fact-checking and save results to a CSV file
-    fact_check(example_texts, fact_check_pipeline, jina_client, "fact_check_results.csv")
+    fact_check(example_texts, fact_check_pipeline, "fact_check_results.csv")

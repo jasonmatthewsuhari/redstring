@@ -8,6 +8,7 @@ import os
 from scripts.llm.named_entity_recognition import load_ner_model, process_text
 from scripts.llm.relation_extraction import load_re_model, process_text_relations
 from scripts.cleaning_conversion.entity_filtering import process_entities
+from pandas import read_csv
 
 # The purpose of this script is for it to be run exactly once: when you want to load it into the
 # neo4j database for the first time. You can do the same if there's a huge increase in the provided
@@ -74,54 +75,12 @@ def main():
     # extracted_results = process_text_relations(texts, re_tokenizer, re_model, relation_csv_output_path)
 
     # Step 7: Re-Cleaning Entities
-    df = pd.read_csv(entity_csv_output_path)
-    df["frequency"] = 1
-
-    def clean_entity_name(name):
-        name = name.lower().strip()  # Lowercase and strip whitespace
-        name = re.sub(r"[^a-z0-9\s]", "", name)  # Remove special characters except alphanumeric & spaces
-        return name
-
-    df["cleaned_name"] = df["Entity Name"].apply(clean_entity_name)
-    df = df[~df["cleaned_name"].str.isnumeric()]
-    stopwords = {"inc", "ltd", "company", "the", "corp", "group", "plc", "co", "llc", "gmbh", "sa", "sarl", "ag"}
-    df = df[~df["cleaned_name"].isin(stopwords)]
-    df = df[df["cleaned_name"].str.len() > 3]
-
-    unique_entities = {}
-    for index, row in df.iterrows():
-        found = False
-        for key in unique_entities.keys():
-            if fuzz.ratio(row["cleaned_name"], key) >= 50:  # Fuzzy similarity threshold of 0.5
-                unique_entities[key]["frequency"] += 1
-                found = True
-                break
-        if not found:
-            unique_entities[row["cleaned_name"]] = {
-                "Entity Name": row["Entity Name"],
-                "Label": row["Label"],
-                "Confidence": row["Confidence"],
-                "frequency": 1,
-            }
-
-            # Load the relationships CSV
-        
-
-
-    df_final = pd.DataFrame.from_dict(unique_entities, orient="index")
     df_relationships = pd.read_csv(relation_csv_output_path)
-    valid_entities = set(df_relationships["Source"]).union(set(df_relationships["Target"]))
-    df_final = df_final[df_final["Entity Name"].isin(valid_entities)]
-    df_final.to_csv(entity_csv_output_path, index=False)
+    df_relationships.to_csv(relation_csv_output_path, index = False)
 
-    df_relationships = pd.read_csv(relation_csv_output_path)
-    valid_entities = set(df_final["Entity Name"])
-    df_relationships = df_relationships[
-        df_relationships["Source"].isin(valid_entities) & df_relationships["Target"].isin(valid_entities)
-    ]
-    df_relationships.to_csv(relation_csv_output_path, index=False)
+    
 
-    print("Machine learning pipeline for initial dataset completed successfully!")
+    # print("Machine learning pipeline for initial dataset completed successfully!")
 
 if __name__ == "__main__":
     main()

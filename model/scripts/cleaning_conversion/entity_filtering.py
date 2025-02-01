@@ -6,6 +6,9 @@ import numpy as np
 def process_entities(entity_list):
     # Convert list of strings into a DataFrame
     data = [line.split(',') for line in entity_list]
+    for i in range(len(data)):
+        if len(data[i]) == 3: continue
+        print(data[i], len(data[i]))
     df = pd.DataFrame(data, columns=['Entity Name', 'Label', 'Confidence'])
     df['Confidence'] = df['Confidence'].astype(float)  # Convert Confidence column to float
     

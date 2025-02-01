@@ -18,7 +18,6 @@ import numpy as np
 repo_path = Path(__file__).resolve().parents[2]
 sys.path.append(str(repo_path))
 
-from model.scripts.llm.named_entity_recognition import load_ner_model, process_text 
 from model.scripts.llm.relation_extraction import load_re_model, process_text_relations
 
 # Load environment variables
@@ -106,8 +105,7 @@ async def startup_event():
     # load models on startup
     #TODO: add fc_pipeline once jina is setup
     print("Initializing machine learning models...")
-    global ner_pipeline, re_pipeline
-    ner_pipeline = load_ner_model()
+    global re_pipeline
     re_pipeline = load_re_model()
     print("Machine learning models initialized!")
 
@@ -237,18 +235,8 @@ async def process_new_text(texts: list[str]):
     if not texts:
         raise HTTPException(status_code=400, detail="No texts provided.")
 
-    ner_results = process_text(texts, ner_pipeline)
+    re_pipeline = load_re_model()
     re_results = process_text_relations(texts, *re_pipeline)
-
-    for ner_result in ner_results:
-        for entity in ner_result['entities']:
-            identifier = generate_hash(entity['word'])
-            entity_type = entity['label']
-            metadata = {
-                "name": entity['word'],
-                "confidence": float(entity['confidence'])
-            }
-            await create_entity(identifier=identifier, entity_type=entity_type, metadata=metadata)
 
     for re_result in re_results:
         for relation in re_result['relationships']:
