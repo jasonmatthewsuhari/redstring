@@ -1,18 +1,23 @@
 import React, { useEffect, useState, useRef } from "react";
 import ForceGraph3D from "react-force-graph-3d";
 import * as THREE from "three";
-import { generateEntityHash } from "../utils/generateEntityHash"; // ✅ Import TypeScript hash function
+import { generateEntityHash } from "../utils/generateEntityHash"; // Example utility
 
-const API_BASE_URL = "http://127.0.0.1:8000"; // Change if using deployed API
+const API_BASE_URL = "http://127.0.0.1:8000";
 const ENTITIES_ENDPOINT = `${API_BASE_URL}/entities/`;
 
 const NetworkGraph: React.FC = () => {
   const fgRef = useRef<any>(null);
+
   const [nodes, setNodes] = useState<any[]>([]);
   const [links, setLinks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Keep track of selected node
   const [selectedNode, setSelectedNode] = useState<any>(null);
+  // Track whether the user is dragging a node
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     const fetchEntities = async () => {
@@ -28,59 +33,49 @@ const NetworkGraph: React.FC = () => {
         const linksArray: any[] = [];
         const nameToId: Record<string, string> = {};
 
-        // ✅ Step 1: Populate nodes first
+        // 1️⃣ Build node list first
         data.forEach((entity: any) => {
           const { identifier, metadata } = entity;
           if (!metadata?.name) return;
 
-          nodesArray.push({ identifier, name: metadata.name });
+          // Store entire metadata for dropdown usage
+          nodesArray.push({ identifier, name: metadata.name, metadata });
           nameToId[metadata.name.toLowerCase()] = identifier;
         });
 
-        console.log("✅ Processed Nodes:", nodesArray);
-        console.log("📌 Name-to-ID Mapping:", nameToId);
+        setNodes(nodesArray);
 
-        // ✅ Step 2: Ensure nodes are fully set before processing links
-        setNodes(nodesArray); // 🔥 Set nodes first
-
+        // 2️⃣ Build links after nodes
         setTimeout(() => {
-          console.log("🔗 Processing Relationships after Nodes are Set...");
-
           data.forEach((entity: any) => {
             const { metadata } = entity;
             if (!metadata?.affiliations) return;
 
             metadata.affiliations.forEach((aff: any) => {
               const targetName = aff.entity.toLowerCase();
-              console.log(`🔍 Checking relation: ${metadata.name} → ${aff.entity}`);
-
               if (!(targetName in nameToId)) {
-                console.warn(`⚠️ Missing entity found: ${aff.entity}`);
+                // Create node if it doesn't exist
                 const generatedId = generateEntityHash(aff.entity);
-                nodesArray.push({ identifier: generatedId, name: aff.entity });
+                nodesArray.push({
+                  identifier: generatedId,
+                  name: aff.entity,
+                  metadata: { name: aff.entity, affiliations: [] },
+                });
                 nameToId[targetName] = generatedId;
-              } else {
-                console.log(
-                  `✅ Found existing entity for relation: ${metadata.name} → ${aff.entity} (ID: ${nameToId[targetName]})`
-                );
               }
 
               linksArray.push({
                 source: nameToId[metadata.name.toLowerCase()],
                 target: nameToId[targetName],
-                category: aff.category,
+                category: aff.category, // e.g. 'friendly', 'hostile', 'business', etc.
                 score: aff.score,
               });
             });
           });
 
-          console.log("🔗 Final Relationships:", linksArray);
-
-          // ✅ Ensure nodes exist before setting links
           setLinks(linksArray);
           setLoading(false);
-        }, 500); // 🔥 Small delay to ensure nodes are in state
-
+        }, 500);
       } catch (err) {
         setError((err as Error).message);
         setLoading(false);
@@ -90,71 +85,162 @@ const NetworkGraph: React.FC = () => {
     fetchEntities();
   }, []);
 
-  // Handle node click
+  // Handle node click: highlight node + show dropdown
   const handleNodeClick = (node: any, event: MouseEvent) => {
     event.stopPropagation();
-    setSelectedNode(node);
 
-    fgRef.current.cameraPosition(
-      { x: node.x, y: node.y, z: node.z + 100 },
-      { x: node.x, y: node.y, z: node.z },
-      1000
-    );
+    // Only center camera if NOT dragging
+    if (!isDragging) {
+      // Smooth camera transition
+      fgRef.current.cameraPosition(
+        { x: node.x, y: node.y, z: node.z + 100 }, // new position
+        { x: node.x, y: node.y, z: node.z },      // lookAt ({ x, y, z })
+        1000                                      // ms transition duration
+      );
+    }
+
+    setSelectedNode(node);
   };
 
-  // Close dropdown when clicking outside
+  // Handle background click: close dropdown
   const handleBackgroundClick = (event: React.MouseEvent) => {
     event.stopPropagation();
     setSelectedNode(null);
   };
 
-  if (loading) return <div className="text-white text-center">Loading graph...</div>;
-  if (error) return <div className="text-red-500 text-center">Error: {error}</div>;
+  // Custom node object to achieve white sphere + glowing outline on selected node
+  const renderNode = (node: any) => {
+    const group = new THREE.Group();
 
-  console.log("🚀 Rendering ForceGraph3D");
-  console.log("📌 FINAL Nodes:", nodes);
-  console.log("🔗 FINAL Links:", links);
+    // Base white sphere
+    const sphereGeom = new THREE.SphereGeometry(7, 16, 16);
+    const sphereMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      metalness: 0, // more matte
+      roughness: 0.5,
+    });
+    const sphereMesh = new THREE.Mesh(sphereGeom, sphereMat);
+    group.add(sphereMesh);
+
+    // If node is selected, add a soft "glow" outline
+    if (selectedNode && selectedNode.identifier === node.identifier) {
+      // Slightly larger sphere with translucent blue
+      const outlineGeom = new THREE.SphereGeometry(8.5, 16, 16);
+      const outlineMat = new THREE.MeshBasicMaterial({
+        color: 0x00aaff,
+        transparent: true,
+        opacity: 0.35,
+        side: THREE.BackSide, // flip normals for inside-out effect
+      });
+      const outlineMesh = new THREE.Mesh(outlineGeom, outlineMat);
+      group.add(outlineMesh);
+    }
+
+    return group;
+  };
+
+  // Link color map
+  // Adjust the hex codes and default if needed
+  const getLinkColor = (link: any) => {
+    switch (link.category) {
+      case "friendly":      return "#00FF00"; // green
+      case "hostile":       return "#FF0000"; // red
+      case "business":      return "#0000FF"; // blue
+      case "geographical":  return "#FFD700"; // gold/yellow
+      case "neutral":
+      default:
+        return "#CCCCCC"; // default gray
+    }
+  };
+
+  // Format affiliations: e.g. "Friend of Jason (+0.7 friendly)"
+  const formatAffiliation = (aff: any): string => {
+    let verb;
+    switch (aff.category) {
+      case "friendly":
+        verb = "Friend of";
+        break;
+      case "hostile":
+        verb = "Rival to";
+        break;
+      case "business":
+        verb = "Partner with";
+        break;
+      case "geographical":
+        verb = "Location linking to";
+        break;
+      default:
+        verb = "Affiliation with";
+        break;
+    }
+    return `${verb} ${aff.entity} (${aff.score} ${aff.category})`;
+  };
+
+  // Listen for drag events to avoid camera recentering
+  const handleNodeDrag = () => setIsDragging(true);
+  const handleNodeDragEnd = () => setTimeout(() => setIsDragging(false), 50);
+
+  if (loading) {
+    return <div className="text-white text-center">Loading graph...</div>;
+  }
+  if (error) {
+    return <div className="text-red-500 text-center">Error: {error}</div>;
+  }
 
   return (
     <div className="w-full h-screen bg-gray-900 flex items-center justify-center relative">
+      {/* Background overlay to capture clicks that close the dropdown */}
       <div className="absolute inset-0" onClick={handleBackgroundClick}></div>
 
-      {nodes.length > 0 && links.length > 0 && ( // ✅ Only render graph if data exists
+      {nodes.length > 0 && links.length > 0 && (
         <ForceGraph3D
           ref={fgRef}
           graphData={{ nodes, links }}
-          // 🔥 Configure the ID fields to match your node/link properties
           nodeId="identifier"
           linkSource="source"
           linkTarget="target"
-          enableNodeDrag={true}
-          cooldownTicks={Infinity}
-          nodeRelSize={2}
-          linkWidth={0.5}
-          linkColor={(link: { category?: string }) =>
-            ({
-              friendly: "rgba(0, 255, 0, 0.8)",
-              hostile: "rgba(255, 0, 0, 0.8)",
-              business: "rgba(0, 0, 255, 0.8)",
-            }[link.category || "business"]) || "gray"
-          }
-          linkMaterial={(link: { category?: string }) => {
-            const color =
-              ({
-                friendly: "rgba(0, 255, 0, 0.8)",
-                hostile: "rgba(255, 0, 0, 0.8)",
-                business: "rgba(0, 0, 255, 0.8)",
-              }[link.category || "business"]) || "gray";
-
-            return new THREE.LineBasicMaterial({
-              color,
-              transparent: true,
-              opacity: 0.8,
-              depthWrite: false,
-            });
-          }}
+          nodeThreeObject={renderNode}
+          nodeThreeObjectExtend={true}
           onNodeClick={handleNodeClick}
+          // Closer distance between nodes
+          linkDistance={30}
+          // Color-coded links with partial transparency
+          linkMaterial={(link: any) =>
+            new THREE.LineBasicMaterial({
+              color: getLinkColor(link),
+              transparent: true,
+              opacity: 0.35,
+              depthWrite: false,
+            })
+          }
+          // Drag events to manage camera skip
+          onNodeDrag={handleNodeDrag}
+          onNodeDragEnd={handleNodeDragEnd}
+          enableNodeDrag={true}
+          cooldownTicks={200}
+          onEngineStop={() => fgRef.current.zoomToFit(400)}
         />
+      )}
+
+      {/* Dropdown in top-right corner */}
+      {selectedNode && (
+        <div className="absolute top-4 right-4 w-64 bg-white text-black rounded-lg p-4 shadow-lg pointer-events-auto">
+          <h2 className="font-bold text-lg mb-2">{selectedNode.name}</h2>
+          {selectedNode.metadata?.affiliations?.length > 0 && (
+            <ul className="list-none space-y-1">
+              {selectedNode.metadata.affiliations.map((aff: any, idx: number) => (
+                <li key={idx}>{formatAffiliation(aff)}</li>
+              ))}
+            </ul>
+          )}
+          {/* Example: display other metadata */}
+          {selectedNode.metadata && (
+            <div className="mt-2 text-sm">
+              <strong>Other info:</strong>{" "}
+              {JSON.stringify(selectedNode.metadata, null, 2)}
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
