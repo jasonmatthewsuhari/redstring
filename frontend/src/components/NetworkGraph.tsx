@@ -23,14 +23,17 @@ async function generateNarrative(affiliations: string[], entityName: string): Pr
   console.log("📝 Sending Prompt to LLM:", prompt); // Debugging log
 
   try {
-    const response = await fetch(`https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-alpha`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${HF_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ inputs: prompt })
-    });
+    const response = await fetch(
+      `https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-alpha`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${HF_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ inputs: prompt }),
+      }
+    );
 
     if (!response.ok) throw new Error(`API Error: ${response.status} ${response.statusText}`);
 
@@ -50,11 +53,9 @@ async function generateNarrative(affiliations: string[], entityName: string): Pr
 const API_BASE_URL = "http://127.0.0.1:8000";
 const ENTITIES_ENDPOINT = `${API_BASE_URL}/entities/`;
 
-// Basic in-memory image cache to avoid re-fetching
 type ImageCache = Record<string, string>;
 let imageCache: ImageCache = {};
 
-// Helper: ensure the link is a valid http or https URL
 function isValidHttpUrl(link: string) {
   return link.startsWith("http://") || link.startsWith("https://");
 }
@@ -101,7 +102,6 @@ async function fetchImage(query: string): Promise<string> {
   return "https://placekitten.com/100/100";
 }
 
-// Tailwind classes for coloring parentheses
 const categoryColorMap: Record<string, string> = {
   friendly: "text-green-500",
   hostile: "text-red-500",
@@ -110,7 +110,20 @@ const categoryColorMap: Record<string, string> = {
   neutral: "text-gray-500",
 };
 
-const NetworkGraph: React.FC = () => {
+interface NetworkGraphProps {
+  searchQuery: string;
+  filters: {
+    clusterSize: number;
+    selectedCategories: string[];
+  };
+  relationNodes: { node1: string; node2: string };
+}
+
+const NetworkGraph: React.FC<NetworkGraphProps> = ({
+  searchQuery,
+  filters,
+  relationNodes,
+}) => {
   const fgRef = useRef<any>(null);
 
   const [nodes, setNodes] = useState<any[]>([]);
@@ -118,18 +131,20 @@ const NetworkGraph: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Track selected node & whether user is dragging
   const [selectedNode, setSelectedNode] = useState<any>(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  // For storing the dynamically fetched image URL
   const [selectedNodeImage, setSelectedNodeImage] = useState<string>("https://placekitten.com/100/100");
 
-  /* 
-     2) Add states for the narrative & loading status 
-  */
+  // 🆕 ADDED: State for narrative & loading
   const [narrative, setNarrative] = useState<string>("");
   const [narrativeLoading, setNarrativeLoading] = useState<boolean>(false);
+
+  // 🆕 ADDED: State for image modal
+  const [imageModal, setImageModal] = useState({
+    isOpen: false,
+    imageUrl: "",
+  });
 
   useEffect(() => {
     const fetchEntities = async () => {
@@ -145,7 +160,6 @@ const NetworkGraph: React.FC = () => {
         const linksArray: any[] = [];
         const nameToId: Record<string, string> = {};
 
-        // Build node list
         data.forEach((entity: any) => {
           const { identifier, metadata } = entity;
           if (!metadata?.name) return;
@@ -156,7 +170,6 @@ const NetworkGraph: React.FC = () => {
 
         setNodes(nodesArray);
 
-        // Build links
         setTimeout(() => {
           data.forEach((entity: any) => {
             const { metadata } = entity;
@@ -195,7 +208,27 @@ const NetworkGraph: React.FC = () => {
     fetchEntities();
   }, []);
 
-  // Re-focus camera on node click & fetch image
+  // React to searchQuery changes
+  useEffect(() => {
+    if (!searchQuery.trim()) return;
+    console.log("🔎 [NetworkGraph] Searching for:", searchQuery);
+    // ... implement highlight or filter
+  }, [searchQuery]);
+
+  // React to filters
+  useEffect(() => {
+    console.log("📌 [NetworkGraph] Applying Filters:", filters);
+    // ... implement logic to show/hide categories or limit cluster size
+  }, [filters]);
+
+  // React to relationNodes
+  useEffect(() => {
+    const { node1, node2 } = relationNodes;
+    if (!node1.trim() || !node2.trim()) return;
+    console.log("🔗 [NetworkGraph] Finding relation:", node1, "↔", node2);
+    // ... implement BFS or path highlighting
+  }, [relationNodes]);
+
   const handleNodeClick = async (node: any, event: MouseEvent) => {
     event.stopPropagation();
 
@@ -208,10 +241,9 @@ const NetworkGraph: React.FC = () => {
     }
 
     setSelectedNode(node);
-    setNarrative(""); // Clear previous narrative
+    setNarrative("");
     setNarrativeLoading(false);
 
-    // Attempt to fetch an image from Google CSE
     const name = node?.name || "unknown subject";
     const imageUrl = await fetchImage(name);
     setSelectedNodeImage(imageUrl);
@@ -225,7 +257,32 @@ const NetworkGraph: React.FC = () => {
     setNarrativeLoading(false);
   };
 
-  // Keep color-coded parentheses for the affiliation
+  const handleNodeDrag = () => setIsDragging(true);
+  const handleNodeDragEnd = () => setTimeout(() => setIsDragging(false), 50);
+
+  const handleGenerateNarrative = async () => {
+    if (!selectedNode || !selectedNode.metadata?.affiliations) return;
+
+    const entityName = selectedNode.name || "this entity";
+    const formattedAffiliations = selectedNode.metadata.affiliations.map((aff: any) => {
+      const relation = aff.relation || `Affiliation with ${aff.entity}`;
+      return `${relation} (${aff.score} ${aff.category})`;
+    });
+
+    if (formattedAffiliations.length === 0) {
+      setNarrative("No strong affiliations found.");
+      return;
+    }
+
+    setNarrativeLoading(true);
+    setNarrative("Generating narrative...");
+
+    const generatedText = await generateNarrative(formattedAffiliations, entityName);
+    setNarrative(generatedText);
+    setNarrativeLoading(false);
+  };
+
+  // Format an affiliation line
   const formatAffiliation = (aff: any): JSX.Element => {
     let verb;
     switch (aff.category) {
@@ -262,19 +319,17 @@ const NetworkGraph: React.FC = () => {
   const renderNode = (node: any) => {
     const group = new THREE.Group();
 
-    // Base sphere
     const sphereGeom = new THREE.SphereGeometry(7, 16, 16);
     const sphereMat = new THREE.MeshStandardMaterial({
       color: 0xffffff,
       metalness: 0,
       roughness: 0.5,
-      opacity: 0.5,
+      opacity: 0.8,
       transparent: true,
     });
     const sphereMesh = new THREE.Mesh(sphereGeom, sphereMat);
     group.add(sphereMesh);
 
-    // Glow if selected
     if (selectedNode && selectedNode.identifier === node.identifier) {
       const outlineGeom = new THREE.SphereGeometry(8.5, 16, 16);
       const outlineMat = new THREE.MeshBasicMaterial({
@@ -304,41 +359,6 @@ const NetworkGraph: React.FC = () => {
       default:
         return "#CCCCCC";
     }
-  };
-
-  const handleNodeDrag = () => setIsDragging(true);
-  const handleNodeDragEnd = () => setTimeout(() => setIsDragging(false), 50);
-
-  /* 
-     3) Reintroduce handleGenerateNarrative() function 
-  */
-  const handleGenerateNarrative = async () => {
-    if (!selectedNode || !selectedNode.metadata?.affiliations) return;
-
-    console.log("🟢 Selected Node:", selectedNode);
-    console.log("🟢 Node Name:", selectedNode.name);
-
-    const entityName = selectedNode.name || "this entity";
-
-    const formattedAffiliations = selectedNode.metadata.affiliations.map((aff: any) => {
-      console.log("🔹 Processing Affiliation:", aff);
-      const relation = aff.relation || `Affiliation with ${aff.entity}`;
-      return `${relation} (${aff.score} ${aff.category})`;
-    });
-
-    console.log("📌 Formatted Affiliations Sent to LLM:", formattedAffiliations);
-
-    if (formattedAffiliations.length === 0) {
-      setNarrative("No strong affiliations found.");
-      return;
-    }
-
-    setNarrativeLoading(true);
-    setNarrative("Generating narrative...");
-
-    const generatedText = await generateNarrative(formattedAffiliations, entityName);
-    setNarrative(generatedText);
-    setNarrativeLoading(false);
   };
 
   if (loading) {
@@ -380,7 +400,7 @@ const NetworkGraph: React.FC = () => {
         />
       )}
 
-      {/* Simple dropdown if a node is selected */}
+      {/* Node dropdown if selected */}
       {selectedNode && (
         <div
           className="
@@ -391,11 +411,21 @@ const NetworkGraph: React.FC = () => {
           "
           style={{ maxHeight: "300px", overflowY: "auto" }}
         >
+          {/* 🆕 MOD: make the image clickable */}
           <img
             src={selectedNodeImage}
             alt="Profile"
-            className="absolute top-2 right-2 w-14 h-14 rounded-full border border-gray-200 object-cover"
+            className="
+              absolute top-2 right-2
+              w-14 h-14 rounded-full border border-gray-200 object-cover
+              cursor-pointer transition-opacity hover:opacity-75
+            "
+            onClick={(e) => {
+              e.stopPropagation(); // prevent closing the dropdown
+              setImageModal({ isOpen: true, imageUrl: selectedNodeImage });
+            }}
           />
+
           <h2 className="font-bold text-lg mb-3 pr-16">{selectedNode.name}</h2>
 
           {selectedNode.metadata?.affiliations?.length > 0 && (
@@ -406,7 +436,6 @@ const NetworkGraph: React.FC = () => {
             </ul>
           )}
 
-          {/* (A) Generate Narrative button */}
           <button
             onClick={handleGenerateNarrative}
             className="mt-3 bg-red-500 text-white font-semibold px-4 py-2 rounded-lg w-full hover:bg-red-600 transition duration-200"
@@ -414,7 +443,6 @@ const NetworkGraph: React.FC = () => {
             Generate Narrative
           </button>
 
-          {/* (B) Narrative display */}
           {narrativeLoading ? (
             <div className="text-gray-500 text-sm mt-3 italic">
               Generating narrative...
@@ -422,6 +450,34 @@ const NetworkGraph: React.FC = () => {
           ) : narrative ? (
             <div className="text-gray-600 text-sm mt-3">{narrative}</div>
           ) : null}
+        </div>
+      )}
+
+      {/* 🆕 FULL-SCREEN MODAL FOR IMAGE */}
+      {imageModal.isOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
+          onClick={() => setImageModal({ isOpen: false, imageUrl: "" })}
+        >
+          <div
+            className="relative p-4"
+            onClick={(e) => e.stopPropagation()} // Don't close if clicking the image container
+          >
+            {/* Close Button (✕) */}
+            <button
+              className="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded-full text-lg font-bold hover:bg-red-700"
+              onClick={() => setImageModal({ isOpen: false, imageUrl: "" })}
+            >
+              ✕
+            </button>
+
+            {/* Full-Screen Image */}
+            <img
+              src={imageModal.imageUrl}
+              alt="Full View"
+              className="max-w-full max-h-[80vh] rounded-lg shadow-lg"
+            />
+          </div>
         </div>
       )}
     </div>
