@@ -1,9 +1,3 @@
-import crypto from "crypto";
-
-/**
- * Generate a unique hash for an entity based on its name.
- * Mimics the Python version: "Initials + Random Part + Hash"
- */
 export const generateEntityHash = (name: string): string => {
   if (!name) return "";
 
@@ -14,11 +8,17 @@ export const generateEntityHash = (name: string): string => {
     .join("");
 
   // Generate a random 4-character alphanumeric string
-  const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
+  const array = new Uint8Array(4);
+  window.crypto.getRandomValues(array);
+  const randomPart = Array.from(array)
+    .map((byte) => (byte % 36).toString(36).toUpperCase())
+    .join("");
 
-  // Generate an 8-character hash from the name
-  const hash = crypto.createHash("sha256").update(name).digest("hex").substring(0, 8);
+  // Generate an 8-character hash using a simple hashing method
+  const hash = btoa(unescape(encodeURIComponent(name)))
+    .replace(/[^A-Za-z0-9]/g, "")
+    .substring(0, 8)
+    .toUpperCase();
 
-  // Combine parts to create unique identifier
   return `${initials}${randomPart}${hash}`;
 };
