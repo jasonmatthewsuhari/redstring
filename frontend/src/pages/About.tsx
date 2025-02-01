@@ -1,4 +1,4 @@
-‘’’ import React from "react";
+import React from "react";
 import Header from "../components/Header"; // Header component
 import Squares from "../components/squares";
 
@@ -53,4 +53,3 @@ const About: React.FC = () => {
 };
 
 export default About;
-‘’’
