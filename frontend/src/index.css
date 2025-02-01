@@ -83,3 +83,7 @@ body {
   -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
   scrollbar-width: none; /* Hide scrollbar for Firefox */
 }
+
+.grabbyHands {
+  cursor:grab;
+}

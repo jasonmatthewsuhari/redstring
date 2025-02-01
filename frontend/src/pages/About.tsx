@@ -25,31 +25,6 @@ const App: React.FC = () => {
         <Header />
         <AboutSection />
       </div>
-<<<<<<< Updated upstream
-
-      {/* About Section */}
-      <div className="max-w-3xl text-center mt-10 p-6 bg-white bg-opacity-80 shadow-lg rounded-lg relative z-10">
-        <h2 className="text-4xl font-bold mb-4 animate-pulse">What is Redstring?</h2>
-        <p className="text-lg text-gray-600 animate-fade-in">
-        Redstring, is an automated news processing system that leverages natural language processing, knowledge graphs, and real-time article ingestion to transform unstructured news articles into structured insights. Redstring scrapes, fact-checks, extracts entities, maps relationships, and visualizes intelligence in an interactive network graph. By integrating LLM-driven credibility assessment, Named Entity Recognition (NER), and Relation Extraction (RE), our system identifies affiliations, geopolitical influences, and covert relationship patterns with minimal human intervention, displaying the extracted intelligence in an interactive Tableau dashboard for hands-free, continuously available analysis.
-
-        </p>
-      </div>
-
-      <style>
-        {`
-          @keyframes fade-in {
-            from { opacity: 0; }
-            to { opacity: 1; }
-          }
-
-          .animate-fade-in {
-            animation: fade-in 2s ease-in-out;
-          }
-        `}
-      </style>
-=======
->>>>>>> Stashed changes
     </div>
   );
 };

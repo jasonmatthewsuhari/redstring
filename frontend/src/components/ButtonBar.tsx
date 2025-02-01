@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { Pointer, Settings, Filter, Clock, ZoomIn } from "lucide-react";
+import { Download, ChartNetwork, Filter, Plus } from "lucide-react";
 import SearchBox from "./SearchBox"
-import SendBox from "./SendBox"
-import Slider from "@mui/material/Slider";
 
 const ButtonBar: React.FC = () => {
   const [showTools, setShowTools] = useState(false);
@@ -23,32 +21,21 @@ const ButtonBar: React.FC = () => {
   return (
     <StyledWrapper>
       <div className="button-container">
-        {/* Select Button */}
+        {/* Input Text */}
         <div className="tooltip-container">
-          <button
-            className={`button ${activeButton === "select" ? "active" : ""}`}
-            onClick={() => setActiveButton(activeButton === "select" ? null : "select")}
-          >
-            <Pointer size={32} color="white" />
-          </button>
-          <span className="tooltip">Select</span>
+          <Plus className = "grabbyHands"/>
+          <span className="tooltip">Add Entity / Relationship</span>
         </div>
 
-        {/* Tools Button with Drop-up */}
-        <div className="tooltip-container tools-container">
-          <button
-            className={`button ${showTools ? "active" : ""}`}
-            onClick={toggleTools}
-          >
-            <Settings size={32} color="white" />
-          </button>
-          <span className="tooltip">Tools</span>
-          {showTools && (
-            <div className="dropup-menu">
-              <button className="dropup-button">Find Relation</button>
-              <button className="dropup-button">Download</button>
-            </div>
-          )}
+        {/* Search */}
+        <div className="tooltip-container">
+          <SearchBox className = "grabbyHands"/>
+          <span className="tooltip">Searching for Something?</span>
+        </div>
+        {/* Search */}
+        <div className="tooltip-container">
+          <ChartNetwork className = "grabbyHands"/>
+          <span className="tooltip">Find Closest Relation</span>
         </div>
 
         {/* Filter Button with Drop-up */}
@@ -57,40 +44,23 @@ const ButtonBar: React.FC = () => {
             className={`button ${showFilterOptions ? "active" : ""}`}
             onClick={toggleFilter}
           >
-            <Filter size={32} color="white" />
+            <Filter className = "grabbyHands"/>
           </button>
           <span className="tooltip">Filter</span>
           {showFilterOptions && (
             <div className="dropup-menu">
               <button className="dropup-button">By Date</button>
               <button className="dropup-button">By Category</button>
-              <button className="dropup-button">By Relevance</button>
             </div>
           )}
         </div>
 
-        {/* Timeline Button */}
-        <div className="tooltip-container">
-          <button
-            className={`button ${activeButton === "timeline" ? "active" : ""}`}
-            onClick={() => setActiveButton(activeButton === "timeline" ? null : "timeline")}
-          >
-            <Clock size={32} color="white" />
-          </button>
-          <span className="tooltip">Timeline</span>
-        </div>
-
         {/* Search */}
         <div className="tooltip-container">
-          <SearchBox />
-          <span className="tooltip">Search Node</span>
+          <Download className = "grabbyHands"/>
+          <span className="tooltip">Download the Page</span>
         </div>
 
-        {/* Input Text */}
-        <div className="tooltip-container">
-          <SendBox />
-          <span className="tooltip">Input Text</span>
-        </div>
       </div>
     </StyledWrapper>
   );

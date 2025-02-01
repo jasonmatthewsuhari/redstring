@@ -10,8 +10,10 @@ tokenizers==0.19.1
 langchain-huggingface==0.0.3
 sentence-transformers==3.2.1
 neontology
+pydantic>=2
 pydantic_settings
 scrapy
 python-dotenv
 schedule
 fuzzywuzzy[speedup]
+psutil

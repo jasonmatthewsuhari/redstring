@@ -10,7 +10,7 @@ from scripts.llm.relation_extraction import load_re_model, process_text_relation
 from scripts.cleaning_conversion.entity_filtering import process_entities
 
 # The purpose of this script is for it to be run exactly once: when you want to load it into the
-# neo4j database for the first time. You can do the same if there's a huge increase in the provided
+# Neo4j database for the first time. You can do the same if there's a huge increase in the provided
 # dataset as well. If you are looking for the script you should be using for processing singular texts,
 # it's under main.py!
 
@@ -18,14 +18,12 @@ from scripts.cleaning_conversion.entity_filtering import process_entities
 def main():
     print("Initializing main process...")
 
-    # the 2 datasets provided by SMUBIA x ISD
-    # TODO/DEBUG: add on more CSV paths or make data ingestion pipeline via web crawling
-    # Step 0: Ingest the provided data
+    # Define paths
     repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
     output_path = os.path.join(repo_path, 'redstring', 'data', 'output')
     raw_path = os.path.join(repo_path, 'redstring', 'data', 'raw')
 
-    input_files = [os.path.join(raw_path, 'news_excerpts_parsed.csv'),os.path.join(raw_path, 'wikileaks_parsed.csv')]
+    input_files = [os.path.join(output_path, 'news_excerpts_final.csv')]
     texts = []
 
     # Step 1: Load the text
@@ -34,94 +32,73 @@ def main():
         df = pd.read_csv(file)
         texts.extend(df.iloc[:, 1].dropna().tolist())
 
-    # DEBUG: UNCOMMENT THIS IF YOU NEED THE DATA IN CONNL/JSON FORMAT
-    # FOR FINE-TUNING, OR OTHER USAGES.
-    # [UNUSED] Step 2: Preprocess the text using SpaCy
-    # print("Preprocessing text...")
-    # for text in texts:
-    #      text_to_connl([text], "../ingestion/data/raw/spacy_generated_conll.txt")
-    # conll_to_json("../ingestion/data/raw/spacy_generated_conll.txt", "../ingestion/data/raw/spacy_generated_json.json")
-
-    # Step 2: Load all relevant LLMs 
-    # fc_pipeline = load_fc_model() #TODO: Uncomment this once Jina is activated
-    # ner_pipeline = load_ner_model()
-
-    # keeping only said tokenizer and model active
+    # Load RE model
     re_tokenizer, re_model = load_re_model()
 
-    # Step 3: Fact-check and filter provided text
-    # This step is currently inactive, as we are not implementing Jina and
-    # the base accuracy of the GordonAI fact-checking model is pretty bad.
-
-    # Step 4: Perform NER for all provided text
-    # Deprecated: switching to using RE only to guarantee entities in relationships
-    # entity_csv_output_path = os.path.join(output_path, 'entities.csv')
-    # extracted_results = process_text(texts, ner_pipeline, entity_csv_output_path) # returned and written to csv, both  
-
-    # Step 5: Filter for high-confidence entity recognitions using Mandy's data cleaning
-    # with open(entity_csv_output_path, "r", encoding="utf-8") as file:
-    #     entities = file.readlines()
-
-    # entities = [entity.strip() for entity in entities[1:]]
-    # print(f"Number of entities found: {len(entities)}")
-    # filtered_entities_df = process_entities(entities)
-    # print(f"Number of entities after filtering: {len(filtered_entities_df)}")
-    
-    # filtered_entities_df.to_csv(entity_csv_output_path, index=False, mode="w", encoding="utf-8")
-
     # Step 6: Perform RE for all provided text
+    entity_csv_output_path = os.path.join(output_path, 'entities.csv')
     relation_csv_output_path = os.path.join(output_path, 'relationships.csv')
-    # extracted_results = process_text_relations(texts, re_tokenizer, re_model, relation_csv_output_path)
+    extracted_results = process_text_relations(texts, re_tokenizer, re_model, relation_csv_output_path)
 
-    # Step 7: Re-Cleaning Entities
-    df = pd.read_csv(entity_csv_output_path)
-    df["frequency"] = 1
+    # Load relationships
+    df_relationships = pd.read_csv(relation_csv_output_path)
 
+    # Extract unique entities from relationships
+    unique_entities = set(df_relationships["Source"]).union(set(df_relationships["Target"]))
+    pd.DataFrame({"name": list(unique_entities)}).to_csv(entity_csv_output_path, index=False)
+
+    # Load entities
+    df_entity = pd.read_csv(entity_csv_output_path)
+    df_entity["frequency"] = 1
+
+    # Function to clean entity names
     def clean_entity_name(name):
         name = name.lower().strip()  # Lowercase and strip whitespace
         name = re.sub(r"[^a-z0-9\s]", "", name)  # Remove special characters except alphanumeric & spaces
         return name
 
-    df["cleaned_name"] = df["Entity Name"].apply(clean_entity_name)
-    df = df[~df["cleaned_name"].str.isnumeric()]
-    stopwords = {"inc", "ltd", "company", "the", "corp", "group", "plc", "co", "llc", "gmbh", "sa", "sarl", "ag"}
-    df = df[~df["cleaned_name"].isin(stopwords)]
-    df = df[df["cleaned_name"].str.len() > 3]
+    # Clean entity names
+    df_entity["cleaned_name"] = df_entity["name"].apply(clean_entity_name)
+    df_entity = df_entity[~df_entity["cleaned_name"].str.isnumeric()]
 
-    unique_entities = {}
-    for index, row in df.iterrows():
+    # Remove common stopwords
+    stopwords = {"inc", "ltd", "company", "the", "corp", "group", "plc", "co", "llc", "gmbh", "sa", "sarl", "ag"}
+    df_entity = df_entity[~df_entity["cleaned_name"].isin(stopwords)]
+    df_entity = df_entity[df_entity["cleaned_name"].str.len() > 3]
+
+    # Apply fuzzy matching to merge similar entities
+    unique_entities_dict = {}
+    for index, row in df_entity.iterrows():
         found = False
-        for key in unique_entities.keys():
-            if fuzz.ratio(row["cleaned_name"], key) >= 50:  # Fuzzy similarity threshold of 0.5
-                unique_entities[key]["frequency"] += 1
+        for key in unique_entities_dict.keys():
+            if fuzz.ratio(row["cleaned_name"], key) >= 50:  # Fuzzy similarity threshold of 50%
+                unique_entities_dict[key]["frequency"] += 1
                 found = True
                 break
         if not found:
-            unique_entities[row["cleaned_name"]] = {
-                "Entity Name": row["Entity Name"],
-                "Label": row["Label"],
-                "Confidence": row["Confidence"],
+            unique_entities_dict[row["cleaned_name"]] = {
+                "name": row["name"],
+                "Label": row.get("Label", ""),
+                "Confidence": row.get("Confidence", ""),
                 "frequency": 1,
             }
 
-            # Load the relationships CSV
-        
+    # Convert cleaned unique entities into DataFrame
+    df_final = pd.DataFrame.from_dict(unique_entities_dict, orient="index")
 
-
-    df_final = pd.DataFrame.from_dict(unique_entities, orient="index")
-    df_relationships = pd.read_csv(relation_csv_output_path)
+    # Ensure only valid entities (that exist in relationships) are kept
     valid_entities = set(df_relationships["Source"]).union(set(df_relationships["Target"]))
-    df_final = df_final[df_final["Entity Name"].isin(valid_entities)]
+    df_final = df_final[df_final["name"].isin(valid_entities)]
     df_final.to_csv(entity_csv_output_path, index=False)
 
-    df_relationships = pd.read_csv(relation_csv_output_path)
-    valid_entities = set(df_final["Entity Name"])
+    # Clean relationships to remove invalid entities
     df_relationships = df_relationships[
         df_relationships["Source"].isin(valid_entities) & df_relationships["Target"].isin(valid_entities)
     ]
     df_relationships.to_csv(relation_csv_output_path, index=False)
 
     print("Machine learning pipeline for initial dataset completed successfully!")
+
 
 if __name__ == "__main__":
     main()

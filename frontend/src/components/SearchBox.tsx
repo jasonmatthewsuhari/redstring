@@ -1,6 +1,15 @@
+import { useState } from "react";
 import styled from "styled-components";
 
-const SearchBox  = () => {
+const SearchBox = () => {
+  const [searchText, setSearchText] = useState("");
+
+  const handleInputChange = (event) => {
+    const value = event.target.value;
+    setSearchText(value);
+    console.log(value);
+  };
+
   return (
     <StyledWrapper>
       <div className="container">
@@ -10,6 +19,8 @@ const SearchBox  = () => {
           className="input"
           required
           placeholder="Type to search..."
+          value={searchText}
+          onChange={handleInputChange}
         />
         <div className="icon">
           <svg
@@ -56,7 +67,7 @@ const StyledWrapper = styled.div`
     outline: none;
     width: var(--size-button);
     transition: all ease 0.3s;
-    background-color: transparent; /* No black background */
+    background-color: transparent;
     border-radius: 50px;
     cursor: pointer;
   }
@@ -65,7 +76,7 @@ const StyledWrapper = styled.div`
   .input:not(:invalid) {
     width: 200px;
     cursor: text;
-    background-color: white; /* White background after clicking */
+    background-color: white;
     color: black;
     border-radius: 50px;
     padding-left: 45px;
@@ -80,13 +91,13 @@ const StyledWrapper = styled.div`
     left: 0;
     padding: 8px;
     pointer-events: none;
-    color: white; /* Default white icon */
+    color: white;
     transition: color 0.3s ease;
   }
 
   .input:focus ~ .icon,
   .input:not(:invalid) ~ .icon {
-    color: black; /* Turns black when focused */
+    color: black;
   }
 
   .container .icon svg {

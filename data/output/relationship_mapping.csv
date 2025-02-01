@@ -1,0 +1,96 @@
+Relationship,Category,Intensity
+product or material produced,neutral,0.04
+applies to jurisdiction,neutral,0.33
+located in the administrative territorial entity,geographical,0.95
+officeholder,neutral,0.51
+position held,neutral,0.15
+member of political party,political,0.2
+chairperson,neutral,0.93
+court,neutral,0.39
+country,geographical,0.88
+league,neutral,0.07
+instance of,affiliation,0.49
+part of,affiliation,0.81
+facet of,affiliation,0.38
+continent,geographical,0.4
+owned by,business,0.91
+owner of,neutral,0.19
+point in time,neutral,0.61
+employer,business,0.24
+parent organization,business,0.33
+subsidiary,business,0.01
+participant,neutral,0.49
+date of death,neutral,0.37
+cast member,affiliation,0.89
+place served by transport hub,neutral,0.27
+founded by,neutral,0.84
+director,neutral,0.92
+start time,neutral,0.52
+head of state,political,0.68
+twinned administrative body,political,0.16
+field of work,educational,0.74
+capital,geographical,0.71
+political ideology,political,0.39
+contains administrative territorial entity,neutral,0.65
+shares border with,neutral,0.55
+inception,neutral,0.52
+military rank,neutral,0.41
+location,geographical,0.52
+member of sports team,neutral,0.53
+ethnic group,neutral,0.93
+member of,neutral,0.52
+located in or next to body of water,neutral,0.0
+father,friendly,0.73
+sibling,friendly,0.31
+child,friendly,0.64
+genre,affiliation,0.57
+presenter,neutral,0.65
+award received,affiliation,0.96
+occupation,neutral,0.08
+replaced by,hostile,0.88
+replaces,hostile,0.06
+performer,affiliation,0.9
+distributed by,neutral,0.23
+subclass of,affiliation,0.51
+participant in,affiliation,0.83
+diplomatic relation,political,0.52
+head of government,neutral,0.5
+spouse,friendly,0.07
+item operated,neutral,0.84
+operator,business,0.08
+stock exchange,business,0.68
+headquarters location,neutral,0.85
+significant event,neutral,0.18
+developer,neutral,0.08
+subject has role,affiliation,0.48
+affiliation,affiliation,0.38
+instrument,neutral,0.43
+residence,geographical,0.22
+has cause,neutral,0.7
+medical condition treated,neutral,0.96
+educated at,educational,0.75
+maintained by,neutral,0.15
+author,educational,0.07
+mother,friendly,0.38
+based on,neutral,0.31
+place of death,neutral,0.27
+mouth of the watercourse,neutral,0.5
+tributary,neutral,0.74
+place of birth,neutral,0.07
+use,neutral,0.84
+manufacturer,business,0.75
+collection,neutral,0.59
+has part,neutral,0.06
+time period,neutral,0.79
+named after,neutral,0.72
+relative,friendly,0.29
+capital of,neutral,0.0
+date of birth,neutral,0.32
+country of citizenship,neutral,0.33
+authority,political,0.91
+work location,neutral,0.66
+located on terrain feature,neutral,0.2
+victory,neutral,0.16
+notable work,affiliation,0.07
+main subject,affiliation,0.22
+operating system,neutral,0.54

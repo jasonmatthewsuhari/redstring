@@ -1,185 +1,286 @@
-Entity Name,Label,Confidence,frequency
-AGI SG,ORG,0.9862153,1
-AGP Sustainable Real Assets,ORG,0.99791425,1
-Aarhus University Hospital,LOC,0.9978207,1
-Aberporth,LOC,0.9254142,1
-Abhishek,PER,0.96573555,1
-Achintha Pilapitiya,PER,0.9882413,1
-Acropolis,LOC,0.97527045,1
-Admiralty Road West,LOC,0.98286986,1
-Adobe,ORG,0.9995552,1
-Advanced Persistent Threat Group 31,ORG,0.9985447,1
-Afghanistan Supreme Court,ORG,0.8587207,1
-Agriculture and Food Industries Ministry,ORG,0.9986893,1
-Ah Orh Seafood Restaurant,ORG,0.9577492,1
-Air Resources Board,ORG,0.9994343,1
-Alaska Department of Law,ORG,0.99278486,1
-Alex Murdaugh,PER,0.98700786,1
-Aliff Aziz,PER,0.99934053,1
-Allen Institute for Brain Science,ORG,0.99117917,1
-Alphabet Inc,ORG,0.9996169,1
-Alysha,PER,0.9714365,1
-Ang Mo Kio,LOC,0.96732444,1
-Arsenal,ORG,0.999574,1
-Arturo Tumi Nëcca Potsad,PER,0.92591953,1
-Audrey Fang,PER,0.99958855,1
-BAE Systems,ORG,0.999538,1
-BBDO,ORG,0.9986654,1
-Bad Boy Records,ORG,0.99875736,1
-Balkans Task Force,ORG,0.9976401,1
-Barbara Tucker,PER,0.9995739,1
-Beijing,LOC,0.99987316,1
-Bella Astillah,PER,0.99921674,1
-Belo Horizonte,LOC,0.9985342,1
-Bending Spoons,ORG,0.9981043,1
-Benjamin Netanyahu,PER,0.99864066,1
-Berkshire Hathaway,ORG,0.9994439,1
-Beto Marubo,PER,0.9978274,1
-Betty,PER,0.995704,1
-Billie Jo Calderwood,PER,0.9985654,1
-Binance,ORG,0.9983922,1
-Boat Quay,LOC,0.99141407,1
-Bolivia,LOC,0.9997515,1
-Boris Johnson,PER,0.99962443,1
-Brighton & Hove Albion,ORG,0.9995285,1
-British American Drama Academy,ORG,0.8885275,1
-Butt Muhammad Abdullah,PER,0.9995415,1
-CNOOC,ORG,0.9989307,1
-CONMEBOL,ORG,0.9931669,1
-CRISPR Therapeutics,ORG,0.9966168,1
-CSKA Moscow,ORG,0.99928904,1
-Cadbury Athletic FC,ORG,0.9983406,1
-Carlos Alcaraz,PER,0.99437445,1
-Cashew Medical & Surgery,ORG,0.98325205,1
-Cassie Matthews,PER,0.99915576,1
-Celsius Network,ORG,0.99795556,1
-Chan Leng Leng & Co,ORG,0.999472,1
-Changi Airport Terminal 3,LOC,0.93894225,1
-Cheong Shi Wei,PER,0.8361289,1
-Cherokee Nation,ORG,0.99772215,1
-Church of Our Lady Lourdes,LOC,0.98801035,1
-Claudio Monteza,PER,0.9991204,1
-Communist Youth League,ORG,0.9996887,1
-Cosford Container Park,LOC,0.9153962,1
-Courtney Kennedy Hill,PER,0.99920845,1
-Crowne Plaza Sanya Haitang Bay,LOC,0.84620523,1
-Czech News Agency,ORG,0.9969523,1
-Daniel Funke,PER,0.99889547,1
-Darfur,LOC,0.99899584,1
-Daylight Coffee,ORG,0.9963355,1
-DeRucci,ORG,0.9980057,1
-Deepika Padukone,PER,0.9493382,1
-Dell,ORG,0.9991893,1
-Delta Electronics,ORG,0.999612,1
-Dev Patel,PER,0.9992158,1
-Dilmah,ORG,0.9942916,1
-Dmitry Nicolsky,PER,0.99809384,1
-El Salvador,LOC,0.9996344,1
-Emi Buendia,PER,0.996642,1
-England,LOC,0.99985397,1
-European Commission,ORG,0.9993737,1
-FIFA,ORG,0.999014,1
-Federal Deposit Insurance Corporation,ORG,0.99887574,1
-Five Guys,ORG,0.9977137,1
-Foresight Fund Management,ORG,0.99574316,1
-Fortescue Metals,ORG,0.9977595,1
-Fox Networks Group,ORG,0.99889636,1
-Foxconn,ORG,0.99629134,1
-Full House Building Construction,ORG,0.99839455,1
-Fumio Kishida,PER,0.998178,1
-Fush,LOC,0.99224776,1
-Gangwon Province,LOC,0.9932804,1
-George Bush,PER,0.9992833,1
-Goh Choon Phong,PER,0.95475084,1
-Gojek,ORG,0.99892807,1
-HSBC,ORG,0.9992443,1
-Hadassah Hospital Ein Kerem,LOC,0.9885121,1
-Hajvali,LOC,0.99564433,1
-Harvey Norman Ossia,ORG,0.99554235,1
-IWC Schaffhausen,ORG,0.9115207,1
-Idriss Deby,PER,0.99933994,1
-Ingen Kyoto,ORG,0.9447525,1
-Intuitive Surgical,ORG,0.99546814,1
-Islamic Revolutionary Guard Corps,ORG,0.99959314,1
-JJ Hospital,LOC,0.9848133,1
-JPMorgan,ORG,0.9768427,1
-Jenny Lester Moffitt,PER,0.9315523,1
-Jessie J,PER,0.9986533,1
-Joint Chiefs of Staff,ORG,0.9975801,1
-Joko Widodo,PER,0.9900567,1
-Jyväskylä,LOC,0.9905357,1
-KFOR,ORG,0.99905056,1
-Kazuo Ueda,PER,0.998633,1
-Kentucky,LOC,0.9994061,1
-Kevin Francis Hawkins,PER,0.9996283,1
-Kosovo,LOC,0.99975055,1
-Kristof Titeca,PER,0.99863,1
-Krystsina Tsimanouskaya,PER,0.9983797,1
-Kyiv,LOC,0.9986482,1
-Kyrgyzstan,LOC,0.99968266,1
-Lebanon,LOC,0.9998661,1
-Leonard Bernstein,PER,0.998891,1
-Leopoldo Luque,PER,0.9993083,1
-Lim Kok Thay,PER,0.94095266,1
-Maccabi Tel Aviv,ORG,0.85378534,1
-Madhusree Mukerjee,PER,0.99720556,1
-Maruti Suzuki,ORG,0.9939099,1
-Mary Anna Randolph Custis Lee,PER,0.9744038,1
-Masagos Zulkifli,PER,0.97056603,1
-Masood Azhar,PER,0.9984397,1
-Mehmet Oz,PER,0.9994219,1
-Melati Drinks,ORG,0.9716331,1
-Microsoft,ORG,0.9996995,1
-Middlesbrough,LOC,0.9904944,1
-Mount Kilimanjaro,LOC,0.8728609,1
-Mustafa Suleyman,PER,0.9961303,1
-Nanyang Junior College,ORG,0.9963327,1
-Netflix,ORG,0.9993236,1
-Nicholas Tse,PER,0.9992139,1
-Nippon Telegraph and Telephone,ORG,0.9994841,1
-Nottingham Trent University,ORG,0.9946272,1
-Nzakoundou,LOC,0.97853774,1
-Optus,ORG,0.99945545,1
-OurCrowd,ORG,0.9969557,1
-PCF Sparkletots Braddell Heights,ORG,0.97342557,1
-PDD Holdings,ORG,0.998704,1
-Pallavi,PER,0.978333,1
-Pavel Alekseevich Marinychev,PER,0.99115086,1
-Perusahaan Listrik Negara,ORG,0.9988789,1
-Petrobras,ORG,0.9990229,1
-Philadelphia,LOC,0.99633276,1
-Piyush Gupta,PER,0.999244,1
-Pizza Hut Singapore,ORG,0.9807986,1
-Putumayo River,LOC,0.8994128,1
-Recep Tayyip Erdogan,PER,0.9630846,1
-Reclaim the Future,ORG,0.99898165,1
-Red Crowns Senior Living,ORG,0.9980642,1
-Reykjavík,LOC,0.996704,1
-Royz Et Vous,ORG,0.99571013,1
-Scott Pruitt,PER,0.99931705,1
-Sembcorp Marine Admiralty Yard,ORG,0.9420894,1
-Shigeichi Negishi,PER,0.99700516,1
-Sho Shimabukuro,PER,0.9638457,1
-Shopee Live,ORG,0.98892576,1
-Shwe Byain Phyu Group of Companies,ORG,0.97466147,1
-Steve Dettelbach,PER,0.9960213,1
-Subway,ORG,0.99956125,1
-Suleman Dawood,PER,0.99954724,1
-Super Junior,ORG,0.990677,1
-Susquehanna,ORG,0.96460724,1
-TOP 09,ORG,0.95450217,1
-TUMCREATE,ORG,0.9916496,1
-Tedros Adhanom Ghebreyesus,PER,0.96547586,1
-Texas,LOC,0.99977666,1
-The 1975,ORG,0.9223418,1
-Tobias Gehrke,PER,0.99687684,1
-Tunbridge Wells,LOC,0.99535805,1
-Union of Indigenous Peoples of the Javari Valley,ORG,0.98910576,1
-VMware,ORG,0.99919367,1
-Volvo Cars Tech Fund,ORG,0.9988872,1
-Warren Buffett,PER,0.9685994,1
-Wells Fargo,ORG,0.9995187,1
-Willa Powless,PER,0.99220675,1
-Wladimir Klitschko,PER,0.9166995,1
-Wollongong,LOC,0.9991164,1
-Yodogawa Ward,LOC,0.96937,1
+name,frequency
+cyber espionage,8
+Margaret Zhang,11
+Recep Tayyip Erdogan,1
+neurosurgeon,4
+Yosemite,8
+Feb 14,2
+Greece,4
+Jeremy Renner,7
+Italy,11
+West Cork,13
+hip-hop,3
+George W. Bush,4
+Southeast,12
+internal medicine,7
+Parthenon,14
+Miami-Dade County,6
+Tiyua Uyunkar,2
+Betty,5
+Saudi Arabia,15
+Seoul,3
+Mehmet Oz,2
+cardiac arrest,12
+Diageo,7
+Alphabet,4
+Joe Biden,10
+Rapa Nui,9
+World Bank President,12
+war in Ukraine,17
+Felipe VI,4
+Chuck Hoskin Jr,2
+Maya,13
+Jamie,4
+Spain,8
+Washington state,7
+Gaza Strip,7
+deputy foreign affairs and trade secretary,4
+Royal Bafokeng,5
+Kyiv,2
+Texas’ 34th Congressional District,1
+New Zealand,12
+Infanta Sofía,7
+Imperial Brands,10
+California,10
+Wonder Woman,2
+Gleneagles Hospital,8
+Ghana,6
+Ministry of Defence,6
+Daniel Wu,1
+Paytm,2
+Kentucky,5
+"July 1 2019",2
+Chris Froome,6
+Environmental Protection Agency Administrator,2
+Hirotake Yano,4
+People’s Daily,6
+germanium,4
+Wollongong,4
+EU AI Act,1
+Will Prochaska,3
+Crown Prince Frederik,3
+Scarlett Moffatt,4
+Orang Asli,5
+clothing,2
+Cash App,3
+Brussels Criminal Court,2
+Act 3 Theatrics,3
+Julian Assange,7
+human rights law,3
+Singapore Food Agency,4
+Parti Islam Se-Malaysia,4
+Utah Social Media Regulation Act,3
+Children’s Hospital & Research Center,3
+Eurasian Economic Union,6
+Last Week Tonight,1
+New York Attorney General,2
+Amambay province,2
+Moody’s Analytics,2
+Nancy Lanza,4
+Nottingham Trent University,8
+Productivity and Innovation Credit,1
+the future king,4
+Resorts World Cruises,5
+GDPR,2
+Lance Stroll,2
+Bank of Japan,1
+Starbucks,4
+Alex Murdaugh,4
+gold coin,2
+Black Eagle case,3
+Google,1
+Brasenose College,3
+Emmanuelle Charpentier,1
+William Jones Jr.,3
+Gabby Petito,1
+Steve Dettelbach,1
+Xabia,4
+Beto Marubo,3
+Arturo Tumi Nëcca Potsad,1
+Financial Conduct Authority,2
+Jaish-e-Mohammed,1
+trade deficit for goods and services,3
+Republican,3
+Yurok Tribe,3
+paramilitary,3
+Klamath mountains,3
+Cuba,4
+mining,9
+Toormore,2
+kidnapped,1
+blood pressure,4
+Lim Kok Thay,1
+Batwa,1
+diffusion imaging,2
+"Meghan, Duchess of Sussex",1
+Queen Letizia of Spain,2
+Little Sur River,5
+United Nations,7
+Dean Winters,4
+fake-accounts scandal,1
+Vanessa Bryant,1
+St Petersburg,1
+Snoop Dogg,1
+mid-term legislative elections,1
+Saoirse Kennedy Hill,3
+Pulitzers,3
+kidnapping and killing of four California family members,1
+carbon-fiber,1
+Tokyo,3
+withdrawal from the European Union,1
+Glenn Howerton,5
+Yang Hengjun,2
+Rama Chandran,3
+Norway,1
+November 2019,3
+US-Dakota war of 1862,1
+COVID-19 pandemic,1
+Te Rūnanga o Te Atiawa,1
+Melilla,3
+Benjamin Netanyahu,2
+Mexico,2
+indigenous Matsés,3
+Middlesbrough,1
+Transportation Secretary,2
+Sharmel Teague,2
+Hector Bellerin,2
+Violet Sage Walker,4
+North Kivu,1
+University of Pennsylvania,4
+unprecedented attack on Israel by Hamas,1
+"Bureau of Alcohol, Tobacco, Firearms and Explosives",1
+drone missile killing,2
+David Malpass,3
+Mater Dei,1
+subdural haematoma,1
+BBDO,1
+Javari Valley,1
+Sebastian Kurz,1
+1989 Tiananmen Square crackdown,1
+Shigeichi Negishi,1
+Timnit Gebru,3
+Kaylie Knowles,2
+Tunbridge Wells,2
+Alaska Department of Law,1
+Baba Amr,1
+The Land of Naked People,1
+Syria,1
+Airbus A350-1000,1
+ByteDance,1
+South District Prosecutor,1
+coffee shop,1
+Communist Youth League,2
+Travis Kelce,1
+Donald Trump,4
+Catholic Church,1
+Suleman Dawood,1
+Chile,1
+artificial intelligence,1
+viruses,3
+Karolina Shiino,3
+Mike Johnson,1
+Kazuo Ueda,1
+Admonitions of the Instructress to the Court Ladies,1
+JFK airport,2
+Helsinki metropolitan area,1
+Fujimori,1
+Letitia James,2
+Emyra Wajãpi,1
+Reykjavík,1
+lobby group,1
+FIFA,1
+Vanderbilt: The Rise and Fall of an American Dynasty,1
+head and neck cancers,1
+Félix Tshisekedi,2
+Rosebud Sioux,2
+Dion Loke Cheng Wang,1
+Abhishek,2
+Advanced Persistent Threat Group 31,1
+Christopher Langman,2
+three months of fighting,1
+King Charles,3
+Massachusetts,1
+Kyrgyzstan,1
+British Museum,2
+TOP 09,1
+Paytm Payments Bank,1
+Oxford,2
+"large-scale, American-backed offensive",1
+steroids,1
+Evergrande,2
+prosopometamorphopsia,1
+WeChat,1
+Madhusree Mukerjee,1
+Priygaeetha Dia,1
+trying to overthrow the government by organising nationwide protests in 2013,1
+Cashew Medical & Surgery,1
+Tehrik-i-Taliban Pakistan,2
+Tuareg,1
+Hyundai Global,1
+Saw Swee Hock School of Public Health,1
+Facebook whistleblower,1
+Sylvia Burwell,2
+mass protests against his rule,2
+Mollie Tibbetts,1
+Mohammad Rasoulof,1
+Indonesian government,1
+Mary Anna Randolph Custis Lee,1
+Patricio Jipa,1
+Nzakoundou,1
+US Bank Wealth Management,1
+Neymar,1
+cryptocurrency,1
+Minnesota Timberwolves,2
+Nasdaq,1
+Virgil Abloh,1
+José Luis Vásquez Chogue,1
+School of Humanities,2
+large blood clots,1
+Stiff person syndrome,1
+photographer,1
+irregular heart rhythm,1
+non-profit,1
+Trump-Kim Jong-un summit,1
+Information Commissioner’s Office,1
+extractive industries,1
+It’s Always Sunny in Philadelphia,1
+Berkshire Hathaway,1
+Criterium du Dauphine,1
+Vladimir,1
+Apeel,1
+Union of Indigenous Peoples of the Javari Valley,1
+Paris 2024 Olympics,1
+Scotch whisky,1
+Simon Bolivar,2
+in-flight wellness programme,1
+Morocco,1
+autoimmune disorder,1
+2012 Tour de France,1
+Russian Prime Minister,3
+Jessica Davis,1
+2015 Six Nations Championship,1
+Idriss Deby,1
+Glasgow,2
+Jeep,1
+Ladzu,1
+Film star,1
+Gun Violence Archive,1
+Edward III leopard gold coin,1
+a leading Shia Muslim cleric,1
+Coordination of Azawad Movements,1
+Uruguay,1
+Cheng Wei,2
+Kristof Titeca,1
+Fox Networks Group,1
+Hu Xijin,1
+Amazon,1
+Guatemala,1
+Brazil,1
+EU member states,1
+Federal Deposit Insurance Corporation,1
+Tutsis,1
+Dobunni,1
+Office of Comptroller of the Currency,1
+Sin Ming Road Chicken Rice,1
+Kansas City Chiefs,1
+USDA Under Secretary for Marketing and Regulatory Programs,1

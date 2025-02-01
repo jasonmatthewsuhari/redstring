@@ -30,15 +30,11 @@ const App: React.FC = () => {
     
 
     <div className="relative min-h-screen w-screen overflow-hidden">
-<<<<<<< Updated upstream
-      {/* Background animation */}
-=======
       <section className="flex flex-col items-center py-16">
       <h2 className="text-4xl md:text-6xl font-extrabold mb-4 text-left">
         Interested in <span className="text-[#C0402B]">RedString</span>?
       </h2>
     </section>
->>>>>>> Stashed changes
       <div className="absolute top-0 left-0 w-full h-full -z-10">
         <Squares 
           direction="diagonal" 

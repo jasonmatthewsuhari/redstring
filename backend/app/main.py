@@ -102,15 +102,6 @@ async def startup_event():
     threading.Thread(target=run_scheduler, daemon=True).start()
     print("Data ingestion job initialized!")
 
-    # load models on startup
-    #TODO: add fc_pipeline once jina is setup
-    print("Initializing machine learning models...")
-    global re_pipeline
-    re_pipeline = load_re_model()
-    print("Machine learning models initialized!")
-
-
-
 @app.get("/")
 def read_root():
     return {"message": "API is running!"}
@@ -133,26 +124,12 @@ async def get_entities() -> list:
     ]
 
 @app.post("/entities/")
-async def create_entity(identifier: str, entity_type: str, metadata: Optional[dict] = None):
-    """
-    Create or update an entity.
-    Args:
-        identifier (str): Unique identifier for the entity.
-        entity_type (str): The type of the entity (e.g., "Person", "Organization").
-        metadata (Optional[dict]): Additional data about the entity.
-    """
-    # Create an EntityNode instance
+async def create_entity(identifier: str, metadata: Optional[dict] = None):
     entity = EntityNode(identifier=identifier, type=entity_type)
-
-    # Set metadata if provided
-    if metadata:
-        entity.set_metadata(metadata)
-
-    # Save to the database
+    if metadata: entity.set_metadata(metadata)
     entity.create()
     return {
         "identifier": entity.identifier,
-        "type": entity.type,
         "metadata": metadata
     }
 
@@ -230,25 +207,25 @@ async def get_all_relationships(entity_id: str):
         logging.error(f"Error in /all-relationships/: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
-@app.post("/process-text/")
-async def process_new_text(texts: list[str]):
-    if not texts:
-        raise HTTPException(status_code=400, detail="No texts provided.")
+# @app.post("/process-text/")
+# async def process_new_text(texts: list[str]):
+#     if not texts:
+#         raise HTTPException(status_code=400, detail="No texts provided.")
 
-    re_pipeline = load_re_model()
-    re_results = process_text_relations(texts, *re_pipeline)
+#     re_pipeline = load_re_model()
+#     re_results = process_text_relations(texts, *re_pipeline)
 
-    for re_result in re_results:
-        for relation in re_result['relationships']:
-            source_id = relation['source']
-            target_id = relation['target']
-            rel_type = relation['relationship']
-            metadata = {
-                "confidence": float(relation.get('confidence', 0.0))
-            }
-            await create_relationship(source_id=source_id, target_id=target_id, rel_type=rel_type, metadata=metadata)
+#     for re_result in re_results:
+#         for relation in re_result['relationships']:
+#             source_id = relation['source']
+#             target_id = relation['target']
+#             rel_type = relation['relationship']
+#             metadata = {
+#                 "confidence": float(relation.get('confidence', 0.0))
+#             }
+#             await create_relationship(source_id=source_id, target_id=target_id, rel_type=rel_type, metadata=metadata)
 
-    return {"entities": ner_results, "relations": re_results}
+#     return {"entities": ner_results, "relations": re_results}
 
 @app.delete("/entities/{identifier}")
 async def delete_entity(identifier: str):
