@@ -383,7 +383,6 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
           nodeThreeObject={renderNode}
           nodeThreeObjectExtend={true}
           onNodeClick={handleNodeClick}
-          linkDistance={30}
           linkMaterial={(link: any) =>
             new THREE.LineBasicMaterial({
               color: getLinkColor(link),

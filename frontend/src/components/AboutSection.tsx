@@ -1,7 +1,4 @@
 import React from "react";
-import AnimatedButton from "./animatedbutton";
-import RollingCardGallery from "./RollingGallery";
-import { Link } from "react-router-dom";
 
 const AboutSection: React.FC = () => {
   return (

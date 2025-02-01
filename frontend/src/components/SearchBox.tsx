@@ -4,7 +4,7 @@ import styled from "styled-components";
 const SearchBox = () => {
   const [searchText, setSearchText] = useState("");
 
-  const handleInputChange = (event) => {
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setSearchText(value);
     console.log(value);
