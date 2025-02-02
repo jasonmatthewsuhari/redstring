@@ -1,12 +1,24 @@
 import requests
 
-# Define API endpoint
+# Define API endpoints
 API_BASE_URL = "http://127.0.0.1:8000"  # Replace with actual API URL
+GET_ENTITIES_ENDPOINT = f"{API_BASE_URL}/entities/"
 DELETE_ENTITY_ENDPOINT = f"{API_BASE_URL}/entities/"
 
-# Range of identifiers to delete
-start_id = 1
-end_id = 20
+# Function to fetch all entity identifiers
+def get_all_entity_ids():
+    response = requests.get(GET_ENTITIES_ENDPOINT)
+    try:
+        data = response.json()
+    except requests.exceptions.JSONDecodeError:
+        print("❌ Error: Invalid JSON response from API.")
+        return []
+
+    if response.status_code == 200 and isinstance(data, list):
+        return [entity["identifier"] for entity in data if "identifier" in entity]
+    else:
+        print(f"❌ Failed to fetch entities → Response: {data}")
+        return []
 
 # Function to delete an entity by its identifier
 def delete_entity(identifier):
@@ -21,8 +33,14 @@ def delete_entity(identifier):
     else:
         print(f"❌ Failed to delete Entity {identifier} → Response: {response_data}")
 
-# Delete all entities in the specified range
-for entity_id in range(start_id, end_id + 1):
-    delete_entity(str(entity_id))
+# Fetch all entity identifiers
+entity_ids = get_all_entity_ids()
 
-print("✅ Deletion process completed!")
+# Delete all retrieved entities
+if entity_ids:
+    print(f"🗑️ Deleting {len(entity_ids)} entities...")
+    for entity_id in entity_ids:
+        delete_entity(entity_id)
+    print("✅ Deletion process completed!")
+else:
+    print("⚠️ No entities found to delete.")

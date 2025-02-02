@@ -50,7 +50,7 @@ async function generateNarrative(affiliations: string[], entityName: string): Pr
    End of LLM section
 ------------------------------------------ */
 
-const API_BASE_URL = "https://redstring-45l8.onrender.com";
+const API_BASE_URL = "https://redstring-45l8.onrender.com"; // TODO: change this back to https://redstring-45l8.onrender.com
 const ENTITIES_ENDPOINT = `${API_BASE_URL}/entities/`;
 
 type ImageCache = Record<string, string>;
@@ -111,20 +111,29 @@ const categoryColorMap: Record<string, string> = {
 };
 
 interface NetworkGraphProps {
+  fgRef: React.MutableRefObject<any>; // 🆕 Add this so we can pass it from Graph.tsx
   searchQuery: string;
   filters: {
     clusterSize: number;
     selectedCategories: string[];
   };
   relationNodes: { node1: string; node2: string };
+  focusOnNode: (nodeName: string) => void; // 🆕 Accept the function
 }
 
+
 const NetworkGraph: React.FC<NetworkGraphProps> = ({
+  fgRef,
   searchQuery,
   filters,
   relationNodes,
+  focusOnNode,
 }) => {
-  const fgRef = useRef<any>(null);
+  useEffect(() => {
+    if (fgRef && fgRef.current) {
+      console.log("🔄 [NetworkGraph] Graph Ref Updated!");
+    }
+  }, [fgRef]);
 
   const [nodes, setNodes] = useState<any[]>([]);
   const [links, setLinks] = useState<any[]>([]);
@@ -318,31 +327,43 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
   // Minimal node style
   const renderNode = (node: any) => {
     const group = new THREE.Group();
-
-    const sphereGeom = new THREE.SphereGeometry(7, 16, 16);
+  
+    // Extract frequency from metadata and apply scaling
+    const baseSize = 5;
+    const frequency = node.metadata?.frequency ?? 1; // Default to 1 if missing
+    const scaleFactor = 12; // Increase this to amplify size differences
+    const nodeSize = baseSize + Math.log10(frequency + 1) * scaleFactor; 
+  
+    console.log(`📌 Node: ${node.name}, Frequency: ${frequency}, Size: ${nodeSize}`);
+  
+    const sphereGeom = new THREE.SphereGeometry(nodeSize, 32, 32);
     const sphereMat = new THREE.MeshStandardMaterial({
       color: 0xffffff,
-      metalness: 0,
+      metalness: 0.2,
       roughness: 0.5,
-      opacity: 0.8,
+      opacity: 0.9,
       transparent: true,
     });
     const sphereMesh = new THREE.Mesh(sphereGeom, sphereMat);
     group.add(sphereMesh);
-
+  
     if (selectedNode && selectedNode.identifier === node.identifier) {
-      const outlineGeom = new THREE.SphereGeometry(8.5, 16, 16);
+      const outlineGeom = new THREE.SphereGeometry(nodeSize + 3, 32, 32);
       const outlineMat = new THREE.MeshBasicMaterial({
         color: 0x00aaff,
         transparent: true,
-        opacity: 0.35,
+        opacity: 0.5,
         side: THREE.BackSide,
       });
       const outlineMesh = new THREE.Mesh(outlineGeom, outlineMat);
       group.add(outlineMesh);
     }
+  
     return group;
   };
+  
+  
+  
 
   // Link color
   const getLinkColor = (link: any) => {

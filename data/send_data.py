@@ -14,14 +14,17 @@ relationship_dict = df_relationship_mapping.set_index("Relationship")[["Category
 # Create a dictionary to store node data
 nodes_data = {}
 
-# Step 1: Populate nodes with entity names using hashed identifiers
+# Step 1: Populate nodes with entity names using hashed identifiers and include frequency
 for _, row in df_entities.iterrows():
     entity_name = row["name"]
     identifier = generate_hash(entity_name)  # Use hash-based identifier
+    frequency = row["frequency"] if "frequency" in row else 0  # Include frequency
+
     nodes_data[entity_name] = {
         "identifier": identifier,
         "metadata": {
             "name": entity_name,
+            "frequency": frequency,  # Include frequency in metadata
             "affiliations": []
         }
     }
@@ -34,6 +37,7 @@ for _, row in df_relationships.iterrows():
                 "identifier": generate_hash(entity),  # Use hash-based identifier
                 "metadata": {
                     "name": entity,
+                    "frequency": 0,  # Default to 0 if entity not in entities.csv
                     "affiliations": []
                 }
             }
