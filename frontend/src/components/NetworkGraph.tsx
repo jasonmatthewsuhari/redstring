@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import ForceGraph3D from "react-force-graph-3d";
 import * as THREE from "three";
 import { generateEntityHash } from "../utils/generateEntityHash";
@@ -118,7 +118,6 @@ interface NetworkGraphProps {
     selectedCategories: string[];
   };
   relationNodes: { node1: string; node2: string };
-  focusOnNode: (nodeName: string) => void; // 🆕 Accept the function
 }
 
 
@@ -127,7 +126,6 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
   searchQuery,
   filters,
   relationNodes,
-  focusOnNode,
 }) => {
   useEffect(() => {
     if (fgRef && fgRef.current) {

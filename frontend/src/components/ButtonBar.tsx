@@ -20,9 +20,6 @@ interface ButtonBarProps {
   setRelationNodes: React.Dispatch<
     React.SetStateAction<{ node1: string; node2: string }>
   >;
-
-  // Make sure your Graph or NetworkGraph passes this prop down
-  focusOnNode: (nodeName: string) => void;
 }
 
 const API_BASE_URL = "https://redstring-45l8.onrender.com"; // Update if needed
@@ -34,8 +31,6 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   setFilters,
   relationNodes,
   setRelationNodes,
-  // Pull in focusOnNode
-  focusOnNode,
 }) => {
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [showRelationSearch, setShowRelationSearch] = useState(false);
@@ -54,13 +49,6 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
     type: "",
     target: "",
   });
-
-  // Capture Enter press in search bar
-  const handleSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter" && searchQuery.trim()) {
-      focusOnNode(searchQuery.trim());
-    }
-  };
 
   const [loading, setLoading] = useState(false);
 
@@ -283,11 +271,6 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
             autoComplete="off"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && searchQuery.trim()) {
-                focusOnNode(searchQuery.trim());
-              }
-            }}
           />
           <span className="tooltip">Searching for Something?</span>
         </div>

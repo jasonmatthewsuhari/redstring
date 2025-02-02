@@ -21,27 +21,6 @@ const Graph: React.FC = () => {
   // 🆕 Create a reference to ForceGraph3D
   const fgRef = useRef<ForceGraphMethods | null>(null);
 
-  // 🆕 Function to focus on a node by name
-  const focusOnNode = (nodeName: string) => {
-    if (!fgRef.current) return;
-
-    // ✅ Correctly access graph data
-    const graph = fgRef.current;
-    const { nodes } = graph.graphData(); // ✅ Ensure correct access
-
-    if (!nodes || nodes.length === 0) return;
-    
-    const node = nodes.find((n: any) => n.name.toLowerCase() === nodeName.toLowerCase());
-
-    if (node) {
-      graph.cameraPosition(
-        { x: node.x, y: node.y, z: node.z + 100 }, // Adjust distance
-        { x: node.x, y: node.y, z: node.z },
-        1000 // Smooth transition
-      );
-    }
-  };
-
   return (
     <div className="relative min-h-screen w-screen overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-full -z-10">
@@ -61,7 +40,6 @@ const Graph: React.FC = () => {
           searchQuery={searchQuery}
           filters={filters}
           relationNodes={relationNodes}
-          focusOnNode={focusOnNode} // ✅ Pass function to focus on a node
         />
       </div>
 
@@ -76,7 +54,6 @@ const Graph: React.FC = () => {
           setFilters={setFilters}
           relationNodes={relationNodes}
           setRelationNodes={setRelationNodes}
-          focusOnNode={focusOnNode} // ✅ Pass function to ButtonBar
         />
       </div>
     </div>
