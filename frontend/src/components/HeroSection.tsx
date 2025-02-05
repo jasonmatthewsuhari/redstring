@@ -7,7 +7,7 @@ const HeroSection: React.FC = () => {
   return (
     <section className="flex flex-col items-center py-16">
       <h2 className="text-4xl md:text-6xl font-extrabold mb-4 text-left">
-        <span className="text-[#C0402B]">RedString</span> Knows No Distance,
+        <span className="text-[#C0402B]">Redstring</span> Knows No Distance,
       </h2>
       <h2 className="text-4xl md:text-6xl font-extrabold mb-4 text-left">
         Only Connections
@@ -31,15 +31,15 @@ const HeroSection: React.FC = () => {
       <Card title="Test" content="Lorem ipsum" seeMoreText="dookie"/> */}
       <RollingCardGallery
         cards={[
-          { title: "Red Strings", content: "Content 1", seeMoreText: "See More" },
-          { title: "ER-Extraction", content: "Content 2", seeMoreText: "See More" },
+          { title: "Redstrings", content: "Content 1", seeMoreText: "See More" },
+          { title: "RE-Extraction", content: "Content 2", seeMoreText: "See More" },
           { title: "Data Ingestion", content: "Content 3", seeMoreText: "See More" },
           { title: "Feature 4", content: "Content 4", seeMoreText: "See More" },
           { title: "Feature 5", content: "Content 5", seeMoreText: "See More" },
           { title: "Feature 6", content: "Content 6", seeMoreText: "See More" },
         ]}
         autoplay={true}
-        pauseOnHover={false}
+        pauseOnHover={true}
       />
       </div>
       <br></br><br></br>
