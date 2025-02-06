@@ -38,7 +38,7 @@ def main():
     # Step 6: Perform RE for all provided text
     entity_csv_output_path = os.path.join(output_path, 'entities.csv')
     relation_csv_output_path = os.path.join(output_path, 'relationships.csv')
-    # extracted_results = process_text_relations(texts, re_tokenizer, re_model, relation_csv_output_path)
+    extracted_results = process_text_relations(texts, re_tokenizer, re_model, relation_csv_output_path)
 
     # Load relationships
     df_relationships = pd.read_csv(relation_csv_output_path)

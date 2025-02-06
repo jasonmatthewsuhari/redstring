@@ -1,7 +1,7 @@
 import requests
 
 # Define API endpoints
-API_BASE_URL = "http://127.0.0.1:8000"  # Replace with actual API URL
+API_BASE_URL = "https://redstring-45l8.onrender.com"  # Replace with actual API URL
 GET_ENTITIES_ENDPOINT = f"{API_BASE_URL}/entities/"
 DELETE_ENTITY_ENDPOINT = f"{API_BASE_URL}/entities/"
 
@@ -40,7 +40,8 @@ entity_ids = get_all_entity_ids()
 if entity_ids:
     print(f"🗑️ Deleting {len(entity_ids)} entities...")
     for entity_id in entity_ids:
-        delete_entity(entity_id)
-    print("✅ Deletion process completed!")
+        # delete_entity(entity_id)
+        print(entity_id)
+    print("✅ Printing process completed!")
 else:
     print("⚠️ No entities found to delete.")

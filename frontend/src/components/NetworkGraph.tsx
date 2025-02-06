@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import ForceGraph3D from "react-force-graph-3d";
+import { ConvexHull } from 'three/addons/math/ConvexHull.js';
 import * as THREE from "three";
 import { generateEntityHash } from "../utils/generateEntityHash";
+import ButtonBar from "./ButtonBar";
 
 /* ------------------------------------------
    1) Reintroduce LLM-related constants & functions
@@ -50,8 +52,9 @@ async function generateNarrative(affiliations: string[], entityName: string): Pr
    End of LLM section
 ------------------------------------------ */
 
-const API_BASE_URL = "https://redstring-45l8.onrender.com"; // TODO: change this back to https://redstring-45l8.onrender.com
+const API_BASE_URL = "http://127.0.0.1:8000"; // TODO: change this back to https://redstring-45l8.onrender.com
 const ENTITIES_ENDPOINT = `${API_BASE_URL}/entities/`;
+const FILTERED_ENTITIES_ENDPOINT = `${API_BASE_URL}/entities/filtered/`;
 
 type ImageCache = Record<string, string>;
 let imageCache: ImageCache = {};
@@ -111,21 +114,32 @@ const categoryColorMap: Record<string, string> = {
 };
 
 interface NetworkGraphProps {
-  fgRef: React.MutableRefObject<any>; // 🆕 Add this so we can pass it from Graph.tsx
+  fgRef: React.MutableRefObject<any>;
   searchQuery: string;
   filters: {
-    clusterSize: number;
-    selectedCategories: string[];
+    minAffiliations: number;
+    maxAffiliations: number;
+    minFrequency: number;
+    maxFrequency: number;
+    name: string;
   };
+  setFilters: React.Dispatch<
+    React.SetStateAction<{
+      minAffiliations: number;
+      maxAffiliations: number;
+      minFrequency: number;
+      maxFrequency: number;
+      name: string;
+    }>
+  >;
   relationNodes: { node1: string; node2: string };
 }
-
 
 const NetworkGraph: React.FC<NetworkGraphProps> = ({
   fgRef,
   searchQuery,
   filters,
-  relationNodes,
+  setFilters,
 }) => {
   useEffect(() => {
     if (fgRef && fgRef.current) {
@@ -153,67 +167,48 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
     imageUrl: "",
   });
 
-  useEffect(() => {
-    const fetchEntities = async () => {
-      try {
-        console.log("📥 Fetching Entities from API...");
-        const response = await fetch(ENTITIES_ENDPOINT);
-        if (!response.ok) throw new Error("Failed to fetch entities");
+  const [convexHullMesh, setConvexHullMesh] = useState<THREE.LineSegments | null>(null);
 
-        const data = await response.json();
-        console.log("📌 RAW API Response:", data);
+  const updateConvexHull = () => {
+    console.log("Started");
+    if (!fgRef.current) return;
+    console.log("Updating cv hull");
+    const graphScene = fgRef.current.scene();
+    if (convexHullMesh) {
+      graphScene.remove(convexHullMesh);
+      console.log("Remove old hull");
+     } // Remove old hull
+  
+    if (nodes.length < 4) {
+      console.log("Not enough nodes to compute convex hull");
+      return; // A convex hull requires at least 4 points in 3D
+    }
+    // Extract node positions
+    const points = nodes.map((node) => new THREE.Vector3(node.x, node.y, node.z));
+  
+    // Compute convex hull
+    const convexHull = new ConvexHull().setFromPoints(points);
+    const hullEdges: THREE.Vector3[] = [];
+  
+    for (const face of convexHull.faces) {
+      let edge = face.edge;
+      do {
+        hullEdges.push(edge.head().point.clone(), edge.tail().point.clone()); // Store edges
+        edge = edge.next;
+      } while (edge !== face.edge);
+    }
+  
+    // Create line geometry
+    const geometry = new THREE.BufferGeometry().setFromPoints(hullEdges);
+    const material = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.2 });
+    const hullMesh = new THREE.LineSegments(geometry, material);
+  
+    graphScene.add(hullMesh);
+    setConvexHullMesh(hullMesh);
+    console.log("Convex hull set");
+    console.log("📍 Node positions after layout:", nodes);
 
-        const nodesArray: any[] = [];
-        const linksArray: any[] = [];
-        const nameToId: Record<string, string> = {};
-
-        data.forEach((entity: any) => {
-          const { identifier, metadata } = entity;
-          if (!metadata?.name) return;
-
-          nodesArray.push({ identifier, name: metadata.name, metadata });
-          nameToId[metadata.name.toLowerCase()] = identifier;
-        });
-
-        setNodes(nodesArray);
-
-        setTimeout(() => {
-          data.forEach((entity: any) => {
-            const { metadata } = entity;
-            if (!metadata?.affiliations) return;
-
-            metadata.affiliations.forEach((aff: any) => {
-              const targetName = aff.entity.toLowerCase();
-              if (!(targetName in nameToId)) {
-                const generatedId = generateEntityHash(aff.entity);
-                nodesArray.push({
-                  identifier: generatedId,
-                  name: aff.entity,
-                  metadata: { name: aff.entity, affiliations: [] },
-                });
-                nameToId[targetName] = generatedId;
-              }
-
-              linksArray.push({
-                source: nameToId[metadata.name.toLowerCase()],
-                target: nameToId[targetName],
-                category: aff.category,
-                score: aff.score,
-              });
-            });
-          });
-
-          setLinks(linksArray);
-          setLoading(false);
-        }, 500);
-      } catch (err) {
-        setError((err as Error).message);
-        setLoading(false);
-      }
-    };
-
-    fetchEntities();
-  }, []);
+  };
 
   // React to searchQuery changes
   useEffect(() => {
@@ -222,19 +217,86 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
     // ... implement highlight or filter
   }, [searchQuery]);
 
-  // React to filters
   useEffect(() => {
-    console.log("📌 [NetworkGraph] Applying Filters:", filters);
-    // ... implement logic to show/hide categories or limit cluster size
-  }, [filters]);
-
-  // React to relationNodes
-  useEffect(() => {
-    const { node1, node2 } = relationNodes;
-    if (!node1.trim() || !node2.trim()) return;
-    console.log("🔗 [NetworkGraph] Finding relation:", node1, "↔", node2);
-    // ... implement BFS or path highlighting
-  }, [relationNodes]);
+    const fetchEntities = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+  
+        const params = new URLSearchParams();
+        if (filters.name) params.append("name", filters.name);
+        params.append("min_affiliations", filters.minAffiliations.toString());
+        params.append("max_affiliations", filters.maxAffiliations.toString());
+        params.append("min_frequency", filters.minFrequency.toString());
+        params.append("max_frequency", filters.maxFrequency.toString());
+  
+        console.log("Fetching Entities with Filters:", params.toString());
+  
+        const response = await fetch(`${API_BASE_URL}/entities/filtered/?${params.toString()}`);
+        const data = await response.json();
+        console.log("API Response:", data);
+  
+        // Parse nodes
+        const nodesArray: any[] = [];
+        const linksArray: any[] = [];
+        const nameToId: Record<string, string> = {};
+  
+        data.forEach((entity: any) => {
+          const { identifier, metadata } = entity;
+          if (!metadata?.name) return;
+          nodesArray.push({ identifier, name: metadata.name, metadata });
+          nameToId[metadata.name.toLowerCase()] = identifier;
+        });
+  
+        // 🟢 Ensure links are only added for valid nodes
+        setTimeout(() => {
+          const validNodeIds = new Set(nodesArray.map(node => node.identifier));
+  
+          data.forEach((entity: any) => {
+            const { metadata } = entity;
+            if (!metadata?.affiliations) return;
+  
+            metadata.affiliations.forEach((aff: any) => {
+              const targetName = aff.entity.toLowerCase();
+              if (!(targetName in nameToId)) {
+                const generatedId = generateEntityHash(aff.entity);
+                if (!validNodeIds.has(generatedId)) {
+                  nodesArray.push({
+                    identifier: generatedId,
+                    name: aff.entity,
+                    metadata: { name: aff.entity, affiliations: [] },
+                  });
+                  validNodeIds.add(generatedId);
+                }
+                nameToId[targetName] = generatedId;
+              }
+  
+              if (validNodeIds.has(nameToId[metadata.name.toLowerCase()]) && validNodeIds.has(nameToId[targetName])) {
+                linksArray.push({
+                  source: nameToId[metadata.name.toLowerCase()],
+                  target: nameToId[targetName],
+                  category: aff.category,
+                  score: aff.score,
+                });
+              }
+            });
+          });
+  
+          setNodes(nodesArray); // Make sure nodes are updated first
+          setLinks(linksArray); // Now safely update links
+          setLoading(false);
+        }, 500);
+      } catch (err) {
+        setError((err as Error).message);
+        setLoading(false);
+      }
+    };
+  
+    fetchEntities();
+  }, [filters]); // Only one effect
+  
+  
+  
 
   const handleNodeClick = async (node: any, event: MouseEvent) => {
     event.stopPropagation();
@@ -294,19 +356,19 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
     let verb;
     switch (aff.category) {
       case "friendly":
-        verb = "Friend of";
+        verb = "Friendly with";
         break;
       case "hostile":
         verb = "Rival to";
         break;
       case "business":
-        verb = "Partner with";
+        verb = "Business relation with";
         break;
       case "geographical":
-        verb = "Located in";
+        verb = "Located in/near";
         break;
       default:
-        verb = "Affiliation with";
+        verb = "Neutral affiliation with";
         break;
     }
 
@@ -322,7 +384,6 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
     );
   };
 
-  // Minimal node style
   const renderNode = (node: any) => {
     const group = new THREE.Group();
   
@@ -331,8 +392,9 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
     const frequency = node.metadata?.frequency ?? 1; // Default to 1 if missing
     const scaleFactor = 12; // Increase this to amplify size differences
     const nodeSize = baseSize + Math.log10(frequency + 1) * scaleFactor; 
-  
-    console.log(`📌 Node: ${node.name}, Frequency: ${frequency}, Size: ${nodeSize}`);
+    console.log("📍 Node positions after layout:", nodes);
+
+
   
     const sphereGeom = new THREE.SphereGeometry(nodeSize, 32, 32);
     const sphereMat = new THREE.MeshStandardMaterial({
@@ -394,28 +456,47 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
 
       {nodes.length > 0 && links.length > 0 && (
         <ForceGraph3D
-          ref={fgRef}
-          graphData={{ nodes, links }}
-          nodeId="identifier"
-          linkSource="source"
-          linkTarget="target"
-          nodeThreeObject={renderNode}
-          nodeThreeObjectExtend={true}
-          onNodeClick={handleNodeClick}
-          linkMaterial={(link: any) =>
-            new THREE.LineBasicMaterial({
-              color: getLinkColor(link),
-              transparent: true,
-              opacity: 0.35,
-              depthWrite: false,
+        ref={fgRef}
+        graphData={{ nodes, links }}
+        nodeId="identifier"
+        linkSource="source"
+        linkTarget="target"
+        nodeThreeObject={renderNode}
+        nodeThreeObjectExtend={true}
+        onNodeClick={handleNodeClick}
+        linkMaterial={(link: any) =>
+          new THREE.LineBasicMaterial({
+            color: getLinkColor(link),
+            transparent: true,
+            opacity: 0.35,
+            depthWrite: false,
+          })
+        }
+        // 🆕 Call updateConvexHull after dragging
+        onNodeDrag={handleNodeDrag}
+        onNodeDragEnd={() => {
+          handleNodeDragEnd();
+        }}
+        enableNodeDrag={true}
+        cooldownTicks={200}
+        // 🆕 Ensure coordinates exist, then update hull
+        onEngineStop={() => {
+          // 1) Make sure all nodes have x,y,z
+          setNodes(prevNodes =>
+            prevNodes.map(node => {
+              if (node.x == null || node.y == null || node.z == null) {
+                node.x = (Math.random() - 0.5) * 1000;
+                node.y = (Math.random() - 0.5) * 1000;
+                node.z = (Math.random() - 0.5) * 1000;
+              }
+              return node;
             })
-          }
-          onNodeDrag={handleNodeDrag}
-          onNodeDragEnd={handleNodeDragEnd}
-          enableNodeDrag={true}
-          cooldownTicks={200}
-          onEngineStop={() => fgRef.current.zoomToFit(400)}
-        />
+          );
+      
+          // 2) Zoom the camera
+          // fgRef.current.zoomToFit(400);
+        }}
+      />      
       )}
 
       {/* Node dropdown if selected */}
@@ -429,7 +510,6 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
           "
           style={{ maxHeight: "300px", overflowY: "auto" }}
         >
-          {/* 🆕 MOD: make the image clickable */}
           <img
             src={selectedNodeImage}
             alt="Profile"
@@ -442,9 +522,10 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
               e.stopPropagation(); // prevent closing the dropdown
               setImageModal({ isOpen: true, imageUrl: selectedNodeImage });
             }}
-          />
+          /><br></br>
 
-          <h2 className="font-bold text-lg mb-3 pr-16">{selectedNode.name}</h2>
+          <h2 className="font-bold text-lg pr-16">{selectedNode.name}</h2>
+          <h4 className="font-italic text-sm mb-3 pr-16 text-slate-400">mentioned {selectedNode.metadata?.frequency} times</h4>
 
           {selectedNode.metadata?.affiliations?.length > 0 && (
             <ul className="list-none space-y-1">
@@ -498,6 +579,9 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
           </div>
         </div>
       )}
+      <div className="absolute bottom-20 w-full p-4 flex justify-center">
+        <ButtonBar filters={filters} setFilters={setFilters} />
+      </div>
     </div>
   );
 };
