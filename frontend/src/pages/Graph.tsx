@@ -6,20 +6,26 @@ import DotBackground from "../components/DotBackground";
 import { ForceGraphMethods } from "react-force-graph-3d"; // ✅ Import for proper typing
 
 const Graph: React.FC = () => {
-  //
-  // ────────────────────────────────────────────────────────────
-  //   1) LIFT SHARED STATE HERE (search, filters, relationNodes)
-  // ────────────────────────────────────────────────────────────
-  //
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState({
-    clusterSize: 5,
-    selectedCategories: [] as string[],
-  });
-  const [relationNodes, setRelationNodes] = useState({ node1: "", node2: "" });
-
   // 🆕 Create a reference to ForceGraph3D
   const fgRef = useRef<ForceGraphMethods | null>(null);
+
+  // ✅ Added missing `searchQuery` state
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // ✅ Added missing `relationNodes` state
+  const [relationNodes, setRelationNodes] = useState({
+    node1: "",
+    node2: "",
+  });
+
+  // ✅ Corrected filters state to match `NetworkGraphProps`
+  const [filters, setFilters] = useState({
+    minAffiliations: 0,
+    maxAffiliations: 10,
+    minFrequency: 0,
+    maxFrequency: 100,
+    name: "",
+  });
 
   return (
     <div className="relative min-h-screen w-screen overflow-hidden">
@@ -31,31 +37,13 @@ const Graph: React.FC = () => {
         <Header />
       </div>
 
-      {/* 
-        2) Pass ref to NetworkGraph so it can manage focus
-      */}
-      <div className="relative z-10">
-        <NetworkGraph
-          fgRef={fgRef} // ✅ Pass graph ref to NetworkGraph
-          searchQuery={searchQuery}
-          filters={filters}
-          relationNodes={relationNodes}
-        />
-      </div>
-
-      {/* 
-        3) Pass focusOnNode to ButtonBar so user searches can trigger node focus
-      */}
-      <div className="relative z-10">
-        <ButtonBar
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          filters={filters}
-          setFilters={setFilters}
-          relationNodes={relationNodes}
-          setRelationNodes={setRelationNodes}
-        />
-      </div>
+      <NetworkGraph
+        fgRef={fgRef}
+        searchQuery={searchQuery}
+        filters={filters}
+        setFilters={setFilters}
+        relationNodes={relationNodes}
+      />
     </div>
   );
 };

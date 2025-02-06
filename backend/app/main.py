@@ -157,6 +157,30 @@ async def get_entity(identifier: str) -> dict:
         "metadata": entity.get_metadata()
     }
 
+@app.get("/entities/{}")
+async def get_filtered_entities(query: str) -> list:
+    # query by:
+    # 1.) specific locations
+    # 2.) total cluster size
+    # 3.) number of times mentioned (size)
+    # 4.) specific name
+
+    # add clustered vs sparse view
+    entities = EntityNode.match_nodes()
+
+    cypher = """
+    MATCH (e:Entity {identifier: $identifier})
+    DETACH DELETE e
+    RETURN COUNT(e) AS deleted_count
+    """ 
+
+    return [
+        {
+            "identifier": entity.identifier,
+            "metadata": entity.get_metadata()
+        }
+    ]
+
 @app.post("/relationships/")
 async def create_relationship(source_id: str, target_id: str, rel_type: str, metadata: Optional[dict] = None):
     """
@@ -240,3 +264,67 @@ async def delete_relationship(identifier: str):
         raise HTTPException(status_code=404, detail="Relationship not found")
 
     return {"message": f"Relationship with identifier '{identifier}' has been deleted."}
+
+@app.get("/entities/filtered/")
+async def get_filtered_entities(
+    min_affiliations: Optional[int] = None,
+    max_affiliations: Optional[int] = None,
+    min_frequency: Optional[int] = None,
+    max_frequency: Optional[int] = None,
+    name: Optional[str] = None
+):
+    """
+    Fetch all entities from the database with filtering options:
+    - min_affiliatioens: Minimum number of affiliations.
+    - max_affiliations: Maximum number of affiliations.
+    - min_frequency: Minimum number of times mentioned.
+    - max_frequency: Maximum number of times mentioned.
+    - name: Specific entity name (fuzzy search with at least 50% similarity).
+    
+    Any affiliated entities that are not filtered out will also be included.
+    """
+    filters = []
+    params = {}
+    
+    if name:
+        filters.append("apoc.text.levenshteinSimilarity(apoc.convert.fromJsonMap(e.metadata)['name'], $name) >= 0.5")
+        params["name"] = name
+    
+    if min_affiliations is not None:
+        filters.append("size(apoc.convert.fromJsonMap(e.metadata)['affiliations']) >= $min_affiliations")
+        params["min_affiliations"] = min_affiliations
+    
+    if max_affiliations is not None:
+        filters.append("size(apoc.convert.fromJsonMap(e.metadata)['affiliations']) <= $max_affiliations")
+        params["max_affiliations"] = max_affiliations
+    
+    if min_frequency is not None:
+        filters.append("apoc.convert.fromJsonMap(e.metadata)['frequency'] >= $min_frequency")
+        params["min_frequency"] = min_frequency
+    
+    if max_frequency is not None:
+        filters.append("apoc.convert.fromJsonMap(e.metadata)['frequency'] <= $max_frequency")
+        params["max_frequency"] = max_frequency
+    
+    filter_clause = " AND ".join(filters) if filters else ""
+    
+    cypher_query = f"""
+    MATCH (e:Entity)
+    {f'WHERE {filter_clause}' if filter_clause else ''}
+    WITH COLLECT(e) AS filtered_entities
+    MATCH (e:Entity)-[r:RELATIONSHIP]-(affiliated:Entity)
+    WHERE e IN filtered_entities OR affiliated IN filtered_entities
+    RETURN DISTINCT e.identifier AS identifier, e.metadata AS metadata, 
+                    COLLECT(DISTINCT affiliated.identifier) AS affiliated_entities
+    """
+    
+    results = gc.evaluate_query(cypher_query, params)
+    
+    return [
+        {
+            "identifier": record["identifier"],
+            "metadata": json.loads(record["metadata"]) if record["metadata"] else None,
+            "affiliated_entities": record["affiliated_entities"]
+        }
+        for record in results.records_raw
+]

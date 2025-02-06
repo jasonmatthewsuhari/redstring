@@ -25,7 +25,8 @@ for _, row in df_entities.iterrows():
         "metadata": {
             "name": entity_name,
             "frequency": frequency,  # Include frequency in metadata
-            "affiliations": []
+            "affiliations": [],
+            "location": ""
         }
     }
 
