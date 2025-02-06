@@ -7,12 +7,12 @@ import IconButton from "../components/button";
 // Team members data
 const teamMembers = [
   {
-    name: "Mandy Yap",
+    name: "Ashley Tan",
     role: "NUS",
     course: "Y2 Data Science and Analytics",
-    email: "mandy.yap.z.w@u.nus.edu",
-    linkedin: "https://www.linkedin.com/in/mandy-yap-zhi-wei/",
-    imgSrc: "../../public/mandy.png",
+    email: "e1156686@u.nus.edu",
+    linkedin: "https://www.linkedin.com/in/ashley-tan-ying-shan/",
+    imgSrc: "../../public/ashley.png",
   },
   {
     name: "Jason Suhari",
@@ -21,14 +21,14 @@ const teamMembers = [
     email: "jason.suhari@u.nus.edu",
     linkedin: "https://www.linkedin.com/in/jasonmatthewsuhari/",
     imgSrc: "../../public/jason.png",
-  },
+  },  
   {
-    name: "Ashley Tan",
+    name: "Mandy Yap",
     role: "NUS",
     course: "Y2 Data Science and Analytics",
-    email: "e1156686@u.nus.edu",
-    linkedin: "https://www.linkedin.com/in/ashley-tan-ying-shan/",
-    imgSrc: "../../public/ashley.png",
+    email: "mandy.yap.z.w@u.nus.edu",
+    linkedin: "https://www.linkedin.com/in/mandy-yap-zhi-wei/",
+    imgSrc: "../../public/mandy.png",
   },
   {
     name: "Neo JingYi",
