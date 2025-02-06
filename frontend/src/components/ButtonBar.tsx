@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
-import { Filter } from "lucide-react";
+import { Filter, Home, Search, User, ShoppingCart } from "lucide-react";
 
 interface ButtonBarProps {
   filters: {
@@ -23,11 +23,24 @@ interface ButtonBarProps {
 
 const ButtonBar: React.FC<ButtonBarProps> = ({ filters, setFilters }) => {
   const [showFilterOptions, setShowFilterOptions] = useState(false);
+  const [tempFilters, setTempFilters] = useState(filters);
   const filterButtonRef = useRef<HTMLButtonElement>(null);
   const filterRef = useRef<HTMLDivElement>(null);
 
+  // Keep tempFilters in sync if filters change externally
+  useEffect(() => {
+    setTempFilters(filters);
+  }, [filters]);
+
   const toggleFilter = () => {
     setShowFilterOptions((prev) => !prev);
+  };
+
+  const handleInputChange = (field: string, value: string | number) => {
+    setTempFilters((prev) => ({
+      ...prev,
+      [field]: typeof value === "number" ? value : value.toString(),
+    }));
   };
 
   useEffect(() => {
@@ -51,143 +64,123 @@ const ButtonBar: React.FC<ButtonBarProps> = ({ filters, setFilters }) => {
 
   return (
     <StyledWrapper>
-      <div className="tooltip-container filter-container">
-        <button
-          ref={filterButtonRef}
-          className={`button ${showFilterOptions ? "active" : ""}`}
-          onClick={toggleFilter}
-        >
-          <Filter className="grabbyHands" />
+      <div className="button-container">
+        <button className="button">
+          <Home className="icon" />
         </button>
-        <span className="tooltip">Filter</span>
+        <button className="button">
+          <Search className="icon" />
+        </button>
+        <button className="button" ref={filterButtonRef} onClick={toggleFilter}>
+          <Filter className="icon" />
+        </button>
+        <button className="button">
+          <User className="icon" />
+        </button>
+        <button className="button">
+          <ShoppingCart className="icon" />
+        </button>
+      </div>
 
-        {showFilterOptions && (
-          <div ref={filterRef} className="dropup-menu filter-dropup-menu">
-            <label className="dropup-label">Entity Name (Fuzzy Search)</label>
-            <input
-              type="text"
-              placeholder="Search by name..."
-              className="dropup-input"
-              value={filters.name}
-              onChange={(e) =>
-                setFilters({ ...filters, name: e.target.value })
-              }
-            />
+      {showFilterOptions && (
+        <div ref={filterRef} className="dropup-menu filter-dropup-menu">
+          <label className="dropup-label">Entity Name (Fuzzy Search)</label>
+          <input
+            type="text"
+            placeholder="Search by name..."
+            className="dropup-input"
+            value={tempFilters.name}
+            onChange={(e) => handleInputChange("name", e.target.value)}
+          />
 
-            <label className="dropup-label">Min Affiliations</label>
-            <input
-              type="range"
-              min="0"
-              max="10"
-              step="1"
-              value={filters.minAffiliations}
-              onChange={(e) =>
-                setFilters({ ...filters, minAffiliations: Number(e.target.value) })
-              }
-            />
+          <label className="dropup-label">Min Affiliations</label>
+          <input
+            type="range"
+            min="0"
+            max="10"
+            step="1"
+            value={tempFilters.minAffiliations}
+            onChange={(e) => handleInputChange("minAffiliations", +e.target.value)}
+          />
 
-            <label className="dropup-label">Max Affiliations</label>
-            <input
-              type="range"
-              min="0"
-              max="10"
-              step="1"
-              value={filters.maxAffiliations}
-              onChange={(e) =>
-                setFilters({ ...filters, maxAffiliations: Number(e.target.value) })
-              }
-            />
+          <label className="dropup-label">Max Affiliations</label>
+          <input
+            type="range"
+            min="0"
+            max="10"
+            step="1"
+            value={tempFilters.maxAffiliations}
+            onChange={(e) => handleInputChange("maxAffiliations", +e.target.value)}
+          />
 
-            <label className="dropup-label">Min Frequency</label>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              step="1"
-              value={filters.minFrequency}
-              onChange={(e) =>
-                setFilters({ ...filters, minFrequency: Number(e.target.value) })
-              }
-            />
+          <label className="dropup-label">Min Frequency</label>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            step="1"
+            value={tempFilters.minFrequency}
+            onChange={(e) => handleInputChange("minFrequency", +e.target.value)}
+          />
 
-            <label className="dropup-label">Max Frequency</label>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              step="1"
-              value={filters.maxFrequency}
-              onChange={(e) =>
-                setFilters({ ...filters, maxFrequency: Number(e.target.value) })
-              }
-            />
+          <label className="dropup-label">Max Frequency</label>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            step="1"
+            value={tempFilters.maxFrequency}
+            onChange={(e) => handleInputChange("maxFrequency", +e.target.value)}
+          />
 
           <button
             className="dropup-button"
             onClick={() => {
-              // 1) Close the filter dropup
               setShowFilterOptions(false);
-
-              // 2) The key step: ensure the parent’s `filters` is updated
-              //    so that `NetworkGraph` sees the new values in its `filters` prop
-              console.log("✅ Filters Applied:", filters);
+              console.log("✅ Filters Applied:", tempFilters);
+              setFilters(tempFilters);
             }}
           >
             Apply Filters
           </button>
-
-
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </StyledWrapper>
   );
 };
 
 const StyledWrapper = styled.div`
-  .filter-container {
-    position: relative;
-  }
-  .dropup-menu {
-    position: absolute;
-    bottom: 100px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    padding: 10px;
+  .button-container {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
-    z-index: 9999;
-    backdrop-filter: blur(10px);
-    width: 220px;
+    background-color: black;
+    width: 250px;
+    height: 40px;
+    align-items: center;
+    justify-content: space-around;
+    border-radius: 10px;
   }
-  .dropup-input {
-    background: rgba(255, 255, 255, 0.15);
-    border: none;
-    color: white;
-    padding: 8px;
-    border-radius: 5px;
-    width: 100%;
-    outline: none;
-    margin-bottom: 6px;
-  }
-  .dropup-button {
-    background: none;
-    border: none;
-    color: white;
-    padding: 8px 10px;
-    cursor: pointer;
-    transition: 0.2s ease;
-    text-align: center;
-    width: 100%;
-    border-radius: 5px;
-  }
-  .dropup-button:hover {
-    background: rgba(255, 255, 255, 0.2);
-  }
-  .dropup-label {
+
+  .button {
+    outline: 0 !important;
+    border: 0 !important;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: #fff;
-    font-size: 0.9rem;
+    transition: all ease-in-out 0.3s;
+    cursor: pointer;
+  }
+
+  .button:hover {
+    transform: translateY(-3px);
+  }
+
+  .icon {
+    font-size: 20px;
   }
 `;
 

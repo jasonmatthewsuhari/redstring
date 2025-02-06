@@ -54,6 +54,7 @@ async function generateNarrative(affiliations: string[], entityName: string): Pr
 
 const API_BASE_URL = "http://127.0.0.1:8000"; // TODO: change this back to https://redstring-45l8.onrender.com
 const ENTITIES_ENDPOINT = `${API_BASE_URL}/entities/`;
+const FILTERED_ENTITIES_ENDPOINT = `${API_BASE_URL}/entities/filtered/`;
 
 type ImageCache = Record<string, string>;
 let imageCache: ImageCache = {};
@@ -231,11 +232,11 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
   
         console.log("Fetching Entities with Filters:", params.toString());
   
-        const response = await fetch(`${ENTITIES_ENDPOINT}?${params.toString()}`);
+        const response = await fetch(`${API_BASE_URL}/entities/filtered/?${params.toString()}`);
         const data = await response.json();
         console.log("API Response:", data);
   
-        // Parse nodes & links
+        // Parse nodes
         const nodesArray: any[] = [];
         const linksArray: any[] = [];
         const nameToId: Record<string, string> = {};
@@ -247,28 +248,42 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
           nameToId[metadata.name.toLowerCase()] = identifier;
         });
   
-        // Update nodes
-        setNodes(nodesArray);
-  
-        // Build links after a short delay
+        // 🟢 Ensure links are only added for valid nodes
         setTimeout(() => {
+          const validNodeIds = new Set(nodesArray.map(node => node.identifier));
+  
           data.forEach((entity: any) => {
             const { metadata } = entity;
             if (!metadata?.affiliations) return;
+  
             metadata.affiliations.forEach((aff: any) => {
               const targetName = aff.entity.toLowerCase();
               if (!(targetName in nameToId)) {
-                // ...
+                const generatedId = generateEntityHash(aff.entity);
+                if (!validNodeIds.has(generatedId)) {
+                  nodesArray.push({
+                    identifier: generatedId,
+                    name: aff.entity,
+                    metadata: { name: aff.entity, affiliations: [] },
+                  });
+                  validNodeIds.add(generatedId);
+                }
+                nameToId[targetName] = generatedId;
               }
-              linksArray.push({
-                source: nameToId[metadata.name.toLowerCase()],
-                target: nameToId[targetName],
-                category: aff.category,
-                score: aff.score,
-              });
+  
+              if (validNodeIds.has(nameToId[metadata.name.toLowerCase()]) && validNodeIds.has(nameToId[targetName])) {
+                linksArray.push({
+                  source: nameToId[metadata.name.toLowerCase()],
+                  target: nameToId[targetName],
+                  category: aff.category,
+                  score: aff.score,
+                });
+              }
             });
           });
-          setLinks(linksArray);
+  
+          setNodes(nodesArray); // Make sure nodes are updated first
+          setLinks(linksArray); // Now safely update links
           setLoading(false);
         }, 500);
       } catch (err) {
@@ -279,6 +294,7 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
   
     fetchEntities();
   }, [filters]); // Only one effect
+  
   
   
 
@@ -460,7 +476,6 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
         onNodeDrag={handleNodeDrag}
         onNodeDragEnd={() => {
           handleNodeDragEnd();
-          updateConvexHull();
         }}
         enableNodeDrag={true}
         cooldownTicks={200}
@@ -479,10 +494,7 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
           );
       
           // 2) Zoom the camera
-          fgRef.current.zoomToFit(400);
-      
-          // 3) Update convex hull with final positions
-          updateConvexHull();
+          // fgRef.current.zoomToFit(400);
         }}
       />      
       )}
@@ -567,7 +579,7 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
           </div>
         </div>
       )}
-      <div className="absolute bottom-100 w-full p-4 flex justify-center">
+      <div className="absolute bottom-20 w-full p-4 flex justify-center">
         <ButtonBar filters={filters} setFilters={setFilters} />
       </div>
     </div>
