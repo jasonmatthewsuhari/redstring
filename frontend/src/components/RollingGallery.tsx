@@ -10,7 +10,6 @@ import Card from "./card"; // Import your Card component
 interface CardData {
   title: string;
   content: string;
-  seeMoreText: string;
 }
 
 interface RollingGalleryProps {
@@ -148,7 +147,6 @@ const RollingGallery: React.FC<RollingGalleryProps> = ({
               <Card
                 title={card.title}
                 content={card.content}
-                seeMoreText={card.seeMoreText}
               />
             </div>
           ))}

@@ -6,10 +6,9 @@ import { Code } from 'lucide-react';
 interface CardProps {
   title: string;
   content: string;
-  seeMoreText: string;
 }
 
-const Card: React.FC<CardProps> = ({ title, content, seeMoreText }) => {
+const Card: React.FC<CardProps> = ({ title, content }) => {
   return (
     <StyledWrapper>
       <div className="parent">
@@ -17,7 +16,6 @@ const Card: React.FC<CardProps> = ({ title, content, seeMoreText }) => {
           <div className="content-box">
             <span className="card-title">{title}</span>
             <p className="card-content">{content}</p>
-            <span className="see-more">{seeMoreText}</span>
           </div>
           <div className="icon-box">
             <Code className="code-icon" />
@@ -74,7 +72,7 @@ const StyledWrapper = styled.div`
   .content-box .card-title {
     display: inline-block;
     color: #fff;
-    font-size: 25px;
+    font-size: 27px;
     font-weight: 900;
     transition: all 0.5s ease-in-out;
     transform: translate3d(0px, 0px, 50px);
@@ -82,7 +80,7 @@ const StyledWrapper = styled.div`
 
   .content-box .card-content {
     margin-top: 10px;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
     color: rgba(255, 200, 200, 0.9);
     transition: all 0.5s ease-in-out;
