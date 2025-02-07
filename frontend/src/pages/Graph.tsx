@@ -1,6 +1,5 @@
 import React, { useState, useRef } from "react";
 import Header from "../components/Header";
-import ButtonBar from "../components/ButtonBar";
 import NetworkGraph from "../components/NetworkGraph";
 import DotBackground from "../components/DotBackground";
 import { ForceGraphMethods } from "react-force-graph-3d"; // ✅ Import for proper typing
@@ -9,14 +8,11 @@ const Graph: React.FC = () => {
   // 🆕 Create a reference to ForceGraph3D
   const fgRef = useRef<ForceGraphMethods | null>(null);
 
-  // ✅ Added missing `searchQuery` state
-  const [searchQuery, setSearchQuery] = useState("");
-
-  // ✅ Added missing `relationNodes` state
-  const [relationNodes, setRelationNodes] = useState({
+  const searchQuery = "";
+  const relationNodes = {
     node1: "",
-    node2: "",
-  });
+    node2: ""
+  }
 
   // ✅ Corrected filters state to match `NetworkGraphProps`
   const [filters, setFilters] = useState({

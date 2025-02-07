@@ -54,8 +54,6 @@ async function generateNarrative(affiliations: string[], entityName: string): Pr
 ------------------------------------------ */
 
 const API_BASE_URL = "http://127.0.0.1:8000"; // TODO: change this back to https://redstring-45l8.onrender.com
-const ENTITIES_ENDPOINT = `${API_BASE_URL}/entities/`;
-const FILTERED_ENTITIES_ENDPOINT = `${API_BASE_URL}/entities/filtered/`;
 
 type ImageCache = Record<string, string>;
 let imageCache: ImageCache = {};
@@ -174,46 +172,46 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
 
   const [convexHullMesh, setConvexHullMesh] = useState<THREE.LineSegments | null>(null);
 
-  const updateConvexHull = () => {
-    console.log("Started");
-    if (!fgRef.current) return;
-    console.log("Updating cv hull");
-    const graphScene = fgRef.current.scene();
-    if (convexHullMesh) {
-      graphScene.remove(convexHullMesh);
-      console.log("Remove old hull");
-     } // Remove old hull
+  // const updateConvexHull = () => {
+  //   console.log("Started");
+  //   if (!fgRef.current) return;
+  //   console.log("Updating cv hull");
+  //   const graphScene = fgRef.current.scene();
+  //   if (convexHullMesh) {
+  //     graphScene.remove(convexHullMesh);
+  //     console.log("Remove old hull");
+  //    } // Remove old hull
   
-    if (nodes.length < 4) {
-      console.log("Not enough nodes to compute convex hull");
-      return; // A convex hull requires at least 4 points in 3D
-    }
-    // Extract node positions
-    const points = nodes.map((node) => new THREE.Vector3(node.x, node.y, node.z));
+  //   if (nodes.length < 4) {
+  //     console.log("Not enough nodes to compute convex hull");
+  //     return; // A convex hull requires at least 4 points in 3D
+  //   }
+  //   // Extract node positions
+  //   const points = nodes.map((node) => new THREE.Vector3(node.x, node.y, node.z));
   
-    // Compute convex hull
-    const convexHull = new ConvexHull().setFromPoints(points);
-    const hullEdges: THREE.Vector3[] = [];
+  //   // Compute convex hull
+  //   const convexHull = new ConvexHull().setFromPoints(points);
+  //   const hullEdges: THREE.Vector3[] = [];
   
-    for (const face of convexHull.faces) {
-      let edge = face.edge;
-      do {
-        hullEdges.push(edge.head().point.clone(), edge.tail().point.clone()); // Store edges
-        edge = edge.next;
-      } while (edge !== face.edge);
-    }
+  //   for (const face of convexHull.faces) {
+  //     let edge = face.edge;
+  //     do {
+  //       hullEdges.push(edge.head().point.clone(), edge.tail().point.clone()); // Store edges
+  //       edge = edge.next;
+  //     } while (edge !== face.edge);
+  //   }
   
-    // Create line geometry
-    const geometry = new THREE.BufferGeometry().setFromPoints(hullEdges);
-    const material = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.2 });
-    const hullMesh = new THREE.LineSegments(geometry, material);
+  //   // Create line geometry
+  //   const geometry = new THREE.BufferGeometry().setFromPoints(hullEdges);
+  //   const material = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.2 });
+  //   const hullMesh = new THREE.LineSegments(geometry, material);
   
-    graphScene.add(hullMesh);
-    setConvexHullMesh(hullMesh);
-    console.log("Convex hull set");
-    console.log("📍 Node positions after layout:", nodes);
+  //   graphScene.add(hullMesh);
+  //   setConvexHullMesh(hullMesh);
+  //   console.log("Convex hull set");
+  //   console.log("📍 Node positions after layout:", nodes);
 
-  };
+  // };
 
   useEffect(() => {
     if (!searchQuery.trim()) return;
