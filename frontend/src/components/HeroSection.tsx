@@ -30,9 +30,11 @@ const HeroSection: React.FC = () => {
       <RollingCardGallery
         cards={[
           { title: "Filter", content: "Filter by Cluster Size, Relationship Categories and Time" },
-          { title: "New Data Input", content: "Allows manual input of new Entities and relationships" },
+          { title: "NewsAPI", content: "Automatic fetching of the latest news via a Python scheduler" },
           { title: "Entity Search", content: "Allows entity search to explore specific relationships and significance" },
           { title: "Download Page", content: "Allows instant download of network graph page for future analysis" },
+          { title: "Cloud DB", content: "Highly-scalable cloud database run on Neo4J Aura"},
+          { title: "3D Renders", content: "WebGL-Powered 3D rendering of nodes and entities"},
         ]}
         autoplay={true}
         pauseOnHover={false}
