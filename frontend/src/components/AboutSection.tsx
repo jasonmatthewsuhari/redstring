@@ -3,13 +3,13 @@ import React from "react";
 const AboutSection: React.FC = () => {
   return (
     <section className="flex flex-col items-center py-16">
-      <h2 className="text-4xl md:text-6xl bottom-50 font-extrabold mb-4 text-left">
+      <h2 className="text-4xl md:text-6xl bottom-50 font-extrabold mb-8 text-left">
         About <span className="text-[#C0402B]">RedString</span>
       </h2>
 
       <div className="relative w-full h-0 pb-[56.25%] overflow-hidden rounded-lg shadow-lg">
         <iframe
-          className="absolute top-0 left-0 w-full h-full"
+          className="absolute top-0 left-0 w-full h-full px-8 justify-center"
           src="https://www.youtube.com/embed/xKMgnLt-lIk?si=j63M4vCG5XeXULAv"
           title="RedString Overview"
           frameBorder="0"
