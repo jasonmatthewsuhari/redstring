@@ -53,7 +53,7 @@ async function generateNarrative(affiliations: string[], entityName: string): Pr
    End of LLM section
 ------------------------------------------ */
 
-const API_BASE_URL = "http://127.0.0.1:8000"; // TODO: change this back to https://redstring-45l8.onrender.com
+const API_BASE_URL = "https://redstring-45l8.onrender.com"; // TODO: change this back to https://redstring-45l8.onrender.com
 
 type ImageCache = Record<string, string>;
 let imageCache: ImageCache = {};
