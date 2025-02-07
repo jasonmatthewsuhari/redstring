@@ -121,6 +121,8 @@ interface NetworkGraphProps {
     minFrequency: number;
     maxFrequency: number;
     name: string;
+    minYear: number;
+    maxYear: number;
   };
   setFilters: React.Dispatch<
     React.SetStateAction<{
@@ -129,6 +131,8 @@ interface NetworkGraphProps {
       minFrequency: number;
       maxFrequency: number;
       name: string;
+      minYear: number;
+      maxYear: number;
     }>
   >;
   relationNodes: { node1: string; node2: string };
@@ -243,7 +247,9 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
         params.append("max_affiliations", filters.maxAffiliations.toString());
         params.append("min_frequency", filters.minFrequency.toString());
         params.append("max_frequency", filters.maxFrequency.toString());
-  
+        params.append("min_year", filters.minYear.toString()); // ✅ Added min year filter
+        params.append("max_year", filters.maxYear.toString()); // ✅ Added max year filter
+
         console.log("Fetching Entities with Filters:", params.toString());
   
         const response = await fetch(`${API_BASE_URL}/entities/filtered/?${params.toString()}`);
@@ -659,7 +665,7 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
         </div>
       )}
       <div className="absolute bottom-20 w-full p-4 flex justify-center">
-        <ButtonBar filters={filters} setFilters={setFilters} isSelecting = {isSelecting} setIsSelecting = {setIsSelecting} handleSnapshot = {handleSnapshot}/>
+      <ButtonBar filters={filters} setFilters={setFilters} isSelecting={isSelecting} setIsSelecting={setIsSelecting} handleSnapshot={handleSnapshot} />
       </div>
 
       {/* Sidebar for Selected Nodes */}

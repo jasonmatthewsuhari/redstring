@@ -271,43 +271,62 @@ async def get_filtered_entities(
     max_affiliations: Optional[int] = None,
     min_frequency: Optional[int] = None,
     max_frequency: Optional[int] = None,
+    min_year: Optional[int] = None,
+    max_year: Optional[int] = None,
     name: Optional[str] = None
 ):
     """
     Fetch all entities from the database with filtering options:
-    - min_affiliatioens: Minimum number of affiliations.
+    - min_affiliations: Minimum number of affiliations.
     - max_affiliations: Maximum number of affiliations.
     - min_frequency: Minimum number of times mentioned.
     - max_frequency: Maximum number of times mentioned.
+    - min_year: Minimum year for affiliations.
+    - max_year: Maximum year for affiliations.
     - name: Specific entity name (fuzzy search with at least 50% similarity).
     
     Any affiliated entities that are not filtered out will also be included.
     """
     filters = []
     params = {}
-    
+
     if name:
         filters.append("apoc.text.levenshteinSimilarity(apoc.convert.fromJsonMap(e.metadata)['name'], $name) >= 0.5")
         params["name"] = name
-    
+
     if min_affiliations is not None:
         filters.append("size(apoc.convert.fromJsonMap(e.metadata)['affiliations']) >= $min_affiliations")
         params["min_affiliations"] = min_affiliations
-    
+
     if max_affiliations is not None:
         filters.append("size(apoc.convert.fromJsonMap(e.metadata)['affiliations']) <= $max_affiliations")
         params["max_affiliations"] = max_affiliations
-    
+
     if min_frequency is not None:
         filters.append("apoc.convert.fromJsonMap(e.metadata)['frequency'] >= $min_frequency")
         params["min_frequency"] = min_frequency
-    
+
     if max_frequency is not None:
         filters.append("apoc.convert.fromJsonMap(e.metadata)['frequency'] <= $max_frequency")
         params["max_frequency"] = max_frequency
-    
+
+    # Filtering by year extracted from affiliations' date field
+    if min_year is not None:
+        filters.append("""
+        ANY(affiliation IN apoc.convert.fromJsonMap(e.metadata)['affiliations'] 
+            WHERE affiliation['date'] IS NULL OR TOINTEGER(SUBSTRING(affiliation['date'], 0, 4)) >= $min_year)
+        """)
+        params["min_year"] = min_year
+
+    if max_year is not None:
+        filters.append("""
+        ANY(affiliation IN apoc.convert.fromJsonMap(e.metadata)['affiliations'] 
+            WHERE affiliation['date'] IS NULL OR TOINTEGER(SUBSTRING(affiliation['date'], 0, 4)) <= $max_year)
+        """)
+        params["max_year"] = max_year
+
     filter_clause = " AND ".join(filters) if filters else ""
-    
+
     cypher_query = f"""
     MATCH (e:Entity)
     {f'WHERE {filter_clause}' if filter_clause else ''}
@@ -317,9 +336,9 @@ async def get_filtered_entities(
     RETURN DISTINCT e.identifier AS identifier, e.metadata AS metadata, 
                     COLLECT(DISTINCT affiliated.identifier) AS affiliated_entities
     """
-    
+
     results = gc.evaluate_query(cypher_query, params)
-    
+
     return [
         {
             "identifier": record["identifier"],
@@ -327,4 +346,4 @@ async def get_filtered_entities(
             "affiliated_entities": record["affiliated_entities"]
         }
         for record in results.records_raw
-]
+    ]

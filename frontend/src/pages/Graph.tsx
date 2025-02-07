@@ -21,6 +21,8 @@ const Graph: React.FC = () => {
     minFrequency: 0,
     maxFrequency: 100,
     name: "",
+    minYear: 2000,
+    maxYear: 2025
   });
 
   return (

@@ -9,6 +9,8 @@ interface ButtonBarProps {
     minFrequency: number;
     maxFrequency: number;
     name: string;
+    minYear: number;
+    maxYear: number;
   };
   setFilters: React.Dispatch<
     React.SetStateAction<{
@@ -17,6 +19,8 @@ interface ButtonBarProps {
       minFrequency: number;
       maxFrequency: number;
       name: string;
+      minYear: number;
+      maxYear: number;
     }>
   >;
   isSelecting: boolean;
@@ -129,28 +133,65 @@ const ButtonBar: React.FC<ButtonBarProps> = ({ filters, setFilters, isSelecting,
           />
 
           <label className="dropup-label">Min Affiliations</label>
-          <input
-            type="range"
-            min="0"
-            max="10"
-            step="1"
-            value={tempFilters.minAffiliations}
-            onChange={(e) =>
-              handleInputChange("minAffiliations", +e.target.value)
-            }
-          />
+          <div className="slider-container">
+            <span>{tempFilters.minAffiliations}</span>
+            <input
+              type="range"
+              min="0"
+              max="15"
+              step="1"
+              value={tempFilters.minAffiliations}
+              onChange={(e) => handleInputChange("minAffiliations", +e.target.value)}
+            />
+            <span>15</span>
+          </div>
 
           <label className="dropup-label">Max Affiliations</label>
-          <input
-            type="range"
-            min="0"
-            max="10"
-            step="1"
-            value={tempFilters.maxAffiliations}
-            onChange={(e) =>
-              handleInputChange("maxAffiliations", +e.target.value)
-            }
-          />
+          <div className="slider-container">
+            <span>{tempFilters.maxAffiliations}</span>
+            <input
+              type="range"
+              min="0"
+              max="15"
+              step="1"
+              value={tempFilters.maxAffiliations}
+              onChange={(e) => handleInputChange("maxAffiliations", +e.target.value)}
+            />
+            <span>15</span>
+          </div>
+
+          <label className="dropup-label">Year Range</label>
+
+          {/* Min Year Slider */}
+          <div className="slider-container">
+            <span>{tempFilters.minYear}</span>
+            <input
+              type="range"
+              min="2000"
+              max="2025"
+              step="1"
+              value={tempFilters.minYear}
+              onChange={(e) => handleInputChange("minYear", +e.target.value)}
+            />
+            <span>2025</span>
+          </div>
+
+          {/* Max Year Slider */}
+          <div className="slider-container">
+            <span>{tempFilters.maxYear}</span>
+            <input
+              type="range"
+              min="2000"
+              max="2025"
+              step="1"
+              value={tempFilters.maxYear}
+              onChange={(e) => handleInputChange("maxYear", +e.target.value)}
+            />
+            <span>2025</span>
+          </div>
+
+
+
 
           <button
             className="dropup-button"
@@ -212,6 +253,12 @@ const ButtonBar: React.FC<ButtonBarProps> = ({ filters, setFilters, isSelecting,
 };
 
 const StyledWrapper = styled.div`
+  position: fixed; /* 🔥 Fixes the ButtonBar at the bottom */
+  bottom: 20px; /* Adjusts spacing from the bottom */
+  left: 50%; /* Centers the button bar */
+  transform: translateX(-50%); /* Ensures perfect centering */
+  z-index: 9999; /* Keeps it on top of other elements */
+
   .button-container {
     display: flex;
     background-color: rgba(120, 20, 20, 0.75);
@@ -306,6 +353,25 @@ const StyledWrapper = styled.div`
   .dropup-button:hover {
     background: rgba(255, 255, 255, 0.8);
   }
+
+  .slider-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.slider-container input {
+  flex-grow: 1;
+}
+
+.slider-container span {
+  color: white;
+  font-size: 0.9rem;
+  font-weight: bold;
+  min-width: 25px;
+  text-align: center;
+}
+
 `;
 
 export default ButtonBar;
