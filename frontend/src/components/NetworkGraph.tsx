@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ForceGraph3D from "react-force-graph-3d";
-import { ConvexHull } from 'three/addons/math/ConvexHull.js';
+// import { ConvexHull } from 'three/addons/math/ConvexHull.js';
 import * as THREE from "three";
 import { generateEntityHash } from "../utils/generateEntityHash";
 import ButtonBar from "./ButtonBar";
@@ -174,7 +174,7 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
     imageUrl: "",
   });
 
-  const [convexHullMesh, setConvexHullMesh] = useState<THREE.LineSegments | null>(null);
+  // const [convexHullMesh, setConvexHullMesh] = useState<THREE.LineSegments | null>(null);
 
   // const updateConvexHull = () => {
   //   console.log("Started");
