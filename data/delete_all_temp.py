@@ -40,8 +40,7 @@ entity_ids = get_all_entity_ids()
 if entity_ids:
     print(f"🗑️ Deleting {len(entity_ids)} entities...")
     for entity_id in entity_ids:
-        # delete_entity(entity_id)
-        print(entity_id)
-    print("✅ Printing process completed!")
+        delete_entity(entity_id)
+    print("✅ Deleting process completed!")
 else:
     print("⚠️ No entities found to delete.")

@@ -1,9 +1,10 @@
 import pandas as pd
 import csv
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+from geotext import GeoText
 import time
 
-def process_text_relations(texts, tokenizer, model, output_path=None):
+def process_text_relations(texts, links, dates, tokenizer, model, output_path=None):
     results = []
     gen_kwargs = {
         "max_length": 256,
@@ -13,12 +14,16 @@ def process_text_relations(texts, tokenizer, model, output_path=None):
     }
 
     if output_path:
-        with open(output_path, mode="w", newline="", encoding="utf-8") as csvfile:  # Ensure 'w' mode to overwrite
+        with open(output_path, mode="w", newline="", encoding="utf-8") as csvfile:
             csv_writer = csv.writer(csvfile)
-            csv_writer.writerow(["Source", "Relationship", "Target"])  # Write header
+            csv_writer.writerow(["Source", "Relationship", "Target", "Link", "Location", "Date"])
 
-            for idx, text in enumerate(texts):
+            for idx, (text, link, date) in enumerate(zip(texts, links, dates)):
                 print(f"Processing {idx + 1}/{len(texts)} entries...")
+
+                # Extract location using GeoText
+                places = GeoText(text)
+                location = places.cities[0] if places.cities else "Unknown"
 
                 # Tokenize input text
                 model_inputs = tokenizer(text, max_length=256, padding=True, truncation=True, return_tensors="pt")
@@ -41,7 +46,9 @@ def process_text_relations(texts, tokenizer, model, output_path=None):
 
                     # Write triplets to CSV within the open file
                     for triplet in triplets:
-                        csv_writer.writerow([triplet["source"], triplet["relationship"], triplet["target"]])
+                        csv_writer.writerow([
+                            triplet["source"], triplet["relationship"], triplet["target"], link, location, date
+                        ])
 
                 results.append({"text": text, "relationships": structured_results})
 
@@ -49,7 +56,6 @@ def process_text_relations(texts, tokenizer, model, output_path=None):
     if output_path:
         print(f"Results saved to {output_path}")
     return results
-
 
 
 def load_re_model():
@@ -64,6 +70,7 @@ def load_re_model():
     model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
     print("Relation Extraction model loaded successfully!")
     return tokenizer, model
+
 
 def extract_triplets(text):
     """

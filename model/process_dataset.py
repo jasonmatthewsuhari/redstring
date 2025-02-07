@@ -26,19 +26,20 @@ def main():
     input_files = [os.path.join(output_path, 'news_excerpts_final.csv')]
     texts = []
 
+    entity_csv_output_path = os.path.join(output_path, 'entities.csv')
+    relation_csv_output_path = os.path.join(output_path, 'relationships.csv')
+
+    re_tokenizer, re_model = load_re_model()
+
     # Step 1: Load the text
     for file in input_files:
         print(f"Loading data from {file}...")
         df = pd.read_csv(file)
-        texts.extend(df.iloc[:, 1].dropna().tolist())
+        texts = df.iloc[:, 1].dropna().tolist()
+        links = df.iloc[:, 0].dropna().tolist()
+        dates = df.iloc[:, 2].dropna().tolist()
 
-    # Load RE model
-    re_tokenizer, re_model = load_re_model()
-
-    # Step 6: Perform RE for all provided text
-    entity_csv_output_path = os.path.join(output_path, 'entities.csv')
-    relation_csv_output_path = os.path.join(output_path, 'relationships.csv')
-    extracted_results = process_text_relations(texts, re_tokenizer, re_model, relation_csv_output_path)
+        extracted_results = process_text_relations(texts, links, dates, re_tokenizer, re_model, relation_csv_output_path)
 
     # Load relationships
     df_relationships = pd.read_csv(relation_csv_output_path)
@@ -78,8 +79,6 @@ def main():
         if not found:
             unique_entities_dict[row["cleaned_name"]] = {
                 "name": row["name"],
-                "Label": row.get("Label", ""),
-                "Confidence": row.get("Confidence", ""),
                 "frequency": 1,
             }
 

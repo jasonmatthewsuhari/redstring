@@ -18,7 +18,7 @@ nodes_data = {}
 for _, row in df_entities.iterrows():
     entity_name = row["name"]
     identifier = generate_hash(entity_name)  # Use hash-based identifier
-    frequency = row["frequency"] if "frequency" in row else 0  # Include frequency
+    frequency = row.get("frequency", 0)  # Use .get() to avoid KeyError
 
     nodes_data[entity_name] = {
         "identifier": identifier,
@@ -26,7 +26,6 @@ for _, row in df_entities.iterrows():
             "name": entity_name,
             "frequency": frequency,  # Include frequency in metadata
             "affiliations": [],
-            "location": ""
         }
     }
 
@@ -50,6 +49,11 @@ for _, row in df_relationships.iterrows():
     relation = row["Relationship"]
     target = row["Target"]
 
+    # Extract additional metadata fields (use .get() to avoid KeyError)
+    link = row.get("Link", None)
+    location = row.get("Location", None)
+    date = row.get("Date", None)
+
     # Look up relationship category and intensity score
     relation_info = relationship_dict.get(relation, {"Category": "neutral", "Intensity": 0.0})
     category = relation_info["Category"]
@@ -65,14 +69,20 @@ for _, row in df_relationships.iterrows():
         "relation": formatted_relation,
         "entity": target,
         "score": intensity,
-        "category": category
+        "category": category,
+        "link": link,
+        "location": location,
+        "date": date
     })
 
     nodes_data[target]["metadata"]["affiliations"].append({
         "relation": formatted_relation,
         "entity": source,
         "score": intensity,
-        "category": category
+        "category": category,
+        "link": link,
+        "location": location,
+        "date": date
     })
 
     # Generate hash for the relationship
@@ -86,7 +96,10 @@ for _, row in df_relationships.iterrows():
         "rel_type": relation,
         "metadata": {
             "category": category,
-            "score": intensity
+            "score": intensity,
+            "link": link,
+            "location": location,
+            "date": date
         }
     })
 

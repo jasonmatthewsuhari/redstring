@@ -4,6 +4,7 @@ import { ConvexHull } from 'three/addons/math/ConvexHull.js';
 import * as THREE from "three";
 import { generateEntityHash } from "../utils/generateEntityHash";
 import ButtonBar from "./ButtonBar";
+import { X } from "lucide-react";
 
 /* ------------------------------------------
    1) Reintroduce LLM-related constants & functions
@@ -152,6 +153,10 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [selectedNodes, setSelectedNodes] = useState<any[]>([]);
+
+  const [isSelecting, setIsSelecting] = useState(false);
+
   const [selectedNode, setSelectedNode] = useState<any>(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -210,12 +215,23 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
 
   };
 
-  // React to searchQuery changes
   useEffect(() => {
     if (!searchQuery.trim()) return;
     console.log("🔎 [NetworkGraph] Searching for:", searchQuery);
     // ... implement highlight or filter
   }, [searchQuery]);
+
+  useEffect(() => {
+    if (fgRef.current) {
+      // Cast to any to bypass TypeScript warnings if needed
+      const fgInstance = fgRef.current as any;
+      const chargeForce = fgInstance.d3Force('charge');
+      if (chargeForce) {
+        // Adjust the charge force strength; a value closer to zero means less repulsion
+        chargeForce.strength(-20);
+      }
+    }
+  }, [fgRef]);    
 
   useEffect(() => {
     const fetchEntities = async () => {
@@ -309,6 +325,18 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
       );
     }
 
+    if(isSelecting) {
+      setSelectedNodes((prev) => {
+        const exists = prev.some((n) => n.identifier === node.identifier);
+        if (exists) {
+          return prev.filter((n) => n.identifier !== node.identifier); // Remove if already selected
+        } else {
+          return [...prev, node]; // Add to the list
+        }
+      });
+    }
+  
+
     setSelectedNode(node);
     setNarrative("");
     setNarrativeLoading(false);
@@ -328,6 +356,31 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
 
   const handleNodeDrag = () => setIsDragging(true);
   const handleNodeDragEnd = () => setTimeout(() => setIsDragging(false), 50);
+
+  const handleSnapshot = () => {
+    if (fgRef.current) {
+      const renderer = fgRef.current.renderer();
+      const canvas = renderer.domElement;
+  
+      // Ensure the scene is fully rendered before capturing
+      requestAnimationFrame(() => {
+        const image = canvas.toDataURL("image/png");
+  
+        // Create a download link
+        const link = document.createElement("a");
+        link.href = image;
+        link.download = "network_graph_snapshot.png";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+  
+        console.log("📸 Snapshot taken!");
+      });
+    }
+  };
+  
+  
+  
 
   const handleGenerateNarrative = async () => {
     if (!selectedNode || !selectedNode.metadata?.affiliations) return;
@@ -392,9 +445,6 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
     const frequency = node.metadata?.frequency ?? 1; // Default to 1 if missing
     const scaleFactor = 12; // Increase this to amplify size differences
     const nodeSize = baseSize + Math.log10(frequency + 1) * scaleFactor; 
-    console.log("📍 Node positions after layout:", nodes);
-
-
   
     const sphereGeom = new THREE.SphereGeometry(nodeSize, 32, 32);
     const sphereMat = new THREE.MeshStandardMaterial({
@@ -406,6 +456,18 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
     });
     const sphereMesh = new THREE.Mesh(sphereGeom, sphereMat);
     group.add(sphereMesh);
+
+    if (selectedNodes.some((n) => n.identifier === node.identifier)) {
+      const outlineGeom = new THREE.SphereGeometry(nodeSize + 3, 32, 32);
+      const outlineMat = new THREE.MeshBasicMaterial({
+        color: 0x00ff00, // Green outline
+        transparent: true,
+        opacity: 0.5,
+        side: THREE.BackSide,
+      });
+      const outlineMesh = new THREE.Mesh(outlineGeom, outlineMat);
+      group.add(outlineMesh);
+    }
   
     if (selectedNode && selectedNode.identifier === node.identifier) {
       const outlineGeom = new THREE.SphereGeometry(nodeSize + 3, 32, 32);
@@ -455,7 +517,7 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
       <div className="absolute inset-0" onClick={handleBackgroundClick}></div>
 
       {nodes.length > 0 && links.length > 0 && (
-        <ForceGraph3D
+        <ForceGraph3D 
         ref={fgRef}
         graphData={{ nodes, links }}
         nodeId="identifier"
@@ -472,14 +534,12 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
             depthWrite: false,
           })
         }
-        // 🆕 Call updateConvexHull after dragging
         onNodeDrag={handleNodeDrag}
         onNodeDragEnd={() => {
           handleNodeDragEnd();
         }}
         enableNodeDrag={true}
         cooldownTicks={200}
-        // 🆕 Ensure coordinates exist, then update hull
         onEngineStop={() => {
           // 1) Make sure all nodes have x,y,z
           setNodes(prevNodes =>
@@ -528,12 +588,33 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
           <h4 className="font-italic text-sm mb-3 pr-16 text-slate-400">mentioned {selectedNode.metadata?.frequency} times</h4>
 
           {selectedNode.metadata?.affiliations?.length > 0 && (
-            <ul className="list-none space-y-1">
-              {selectedNode.metadata.affiliations.map((aff: any, idx: number) => (
-                <li key={idx}>{formatAffiliation(aff)}</li>
-              ))}
+            <ul className="list-none space-y-2">
+              {selectedNode.metadata.affiliations.map((aff: any, idx: number) => {
+                const domain = aff.link ? new URL(aff.link).hostname.replace("www.", "") : null;
+                return (
+                  <li key={idx} className="bg-gray-100 p-2 rounded-md">
+                    {formatAffiliation(aff)}
+                    {aff.link ? (
+                      <div className="text-sm text-slate-400">
+                        Source:{" "}
+                        <a
+                          href={aff.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 underline hover:text-blue-600"
+                        >
+                          {domain}
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-slate-400">Source unavailable</div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
+
 
           <button
             onClick={handleGenerateNarrative}
@@ -580,8 +661,41 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({
         </div>
       )}
       <div className="absolute bottom-20 w-full p-4 flex justify-center">
-        <ButtonBar filters={filters} setFilters={setFilters} />
+        <ButtonBar filters={filters} setFilters={setFilters} isSelecting = {isSelecting} setIsSelecting = {setIsSelecting} handleSnapshot = {handleSnapshot}/>
       </div>
+
+      {/* Sidebar for Selected Nodes */}
+      <div className="fixed bottom-4 left-4 w-72 bg-[rgb(114,20,20)] rounded-lg p-2 shadow-lg z-10">
+      <div className="bg-[rgb(114,20,20)] text-white rounded-md p-4">
+        <h2 className="text-lg font-bold">📌 Selected Nodes</h2>
+        <ul className="mt-2 space-y-2">
+          {selectedNodes.map((node) => (
+            <li key={node.identifier} className="flex items-center justify-between bg-gray-100 p-2 rounded-md">
+              <button
+                className="text-white underline hover:text-gray"
+                onClick={() => {
+                  if (fgRef.current) {
+                    fgRef.current.cameraPosition(
+                      { x: node.x, y: node.y, z: node.z + 100 },
+                      { x: node.x, y: node.y, z: node.z },
+                      1000
+                    );
+                  }
+                }}
+              >
+                {node.name}
+              </button>
+              <button
+                className="text-red-500 hover:text-red-700 ml-2"
+                onClick={() => setSelectedNodes((prev) => prev.filter((n) => n.identifier !== node.identifier))}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
     </div>
   );
 };
